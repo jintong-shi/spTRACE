@@ -107,14 +107,12 @@ part-way through a long run.
 
 ```
 <output>/
-├── res.pkl                          full result object (pickle)
 ├── event_log.tsv                    every CNV event: iteration, cell, clone, segment, haplotype
 ├── baf/                             AD.mtx, DP.mtx, snp_info.csv, barcodes.tsv
 ├── qc/                              diagnostic figures
 └── synthetic/
     ├── genome.tsv                   gene → chromosome, start, end
     ├── lineage.tsv                  surviving tumour cells: child → parent
-    ├── lineage_all.tsv              full lineage, including cells that died
     ├── all_cell_ids.tsv             every cell ID ever created, with a survival flag
     ├── cluster_lineage.tsv          cluster-level ancestry matrix
     ├── single_cell_data/            sc-expression, sc-genome_profile, sc-meta_data

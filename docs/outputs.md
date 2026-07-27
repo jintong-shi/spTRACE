@@ -6,7 +6,6 @@ files the row label becomes a leading column named `index`.
 
 ```
 <output>/
-├── res.pkl
 ├── event_log.tsv
 ├── quick_purity_summary.tsv        (--quick-purity-only only)
 ├── baf/
@@ -14,7 +13,6 @@ files the row label becomes a leading column named `index`.
 └── synthetic/
     ├── genome.tsv
     ├── lineage.tsv
-    ├── lineage_all.tsv
     ├── all_cell_ids.tsv
     ├── cluster_lineage.tsv
     ├── single_cell_data/
@@ -30,7 +28,7 @@ files the row label becomes a leading column named `index`.
 | What is each cell's copy number, per gene? | `single_cell_data/sc-genome_profile` |
 | What is each spot's average copy number, per gene? | `spatial_data/st-genome_profile` |
 | Which cells belong to which clone? | `single_cell_data/sc-meta_data` (`clone_id`) |
-| How are clones related? | `lineage.tsv`, `lineage_all.tsv` |
+| How are clones related? | `lineage.tsv` |
 | Which spots are tumour vs benign? | `spatial_data/st-annotation` |
 | Which cells landed in which spot? | `spatial_data/cell_by_spot.txt` |
 | Where does each gene sit on the genome? | `genome.tsv` |
@@ -103,13 +101,17 @@ containing no cells are all-zero and annotated from an empty mean.
 |---|---|
 | `genome.tsv` | `gene`, `chr`, `start`, `end`, `mid`. Row label equals the `gene` column, and rows are in the same order as the expression matrix columns. |
 | `lineage.tsv` | `child_id`, `parent_id` for **surviving tumour cells**. `parent_id` is a cell ID, or `initial_seed` for a founder, or `dropped_cell` if the parent is unknown. |
-| `lineage_all.tsv` | the same for **every** cell ever created, including those that died; `parent_id` is numeric, `-1` for a founder. |
 | `all_cell_ids.tsv` | `cell_id`, `cell_name`, `is_survived` — the map from IDs to the final tables. |
 | `cluster_lineage.tsv` | clusters × clusters ancestry counts. |
 
-`lineage.tsv` is the tree you can compare a clone-inference method against;
-`lineage_all.tsv` is the true generative history, which no method can recover in full
-because dead cells leave no data.
+`lineage.tsv` is the tree you can compare a clone-inference method against.
+
+Cells that died are not in it: the simulator no longer emits the full generative
+history. `all_cell_ids.tsv` still tells you *which* cells existed and whether they
+survived, but not their parents. One consequence is that walking an ancestry chain from
+a founder to its surviving descendants can hit a dead intermediate and stop early, so
+descendant counts derived this way — including `stcnv-batch`'s subclone statistics — are
+lower bounds. Batch runs print how many links are affected.
 
 ## `baf/`
 
@@ -141,15 +143,19 @@ The export emits `cell, snp_id, CHROM, POS, cM, REF, ALT, AD, DP, GT, gene`, res
 `DP > 0` and sorted by coordinate then cell. `CHROM` is written without the `chr` prefix,
 as Numbat expects.
 
-## `res.pkl`
+## What is deliberately not written
 
-The complete in-memory result: `tissue_data`, `st_data`, `lineage`, `lineage_all`,
-`cluster_lineage`, `genome_data`, `cell_ids`, `all_cell_ids`, `event_log`. Everything the
-TSV/Parquet files hold, plus `genome_per_chr` (per-cell, per-haplotype gene counts) which
-is not otherwise exported.
+**`res.pkl`** — the pickled in-memory result. It reached roughly 10 GB per replicate, and
+pickles are version-fragile besides, so it is no longer written. Everything a consumer
+needs is in the tables above. The one field it held that has no tabular equivalent is
+`genome_per_chr` (per-cell, per-haplotype gene counts); the AD/DP matrices in `baf/` carry
+the allele-level signal derived from it.
 
-Pickles are version-fragile: read them with the same package version that wrote them, and
-prefer the tabular files for anything you intend to keep.
+**`lineage_all.tsv`** — ancestry for every cell ever created, including those that died.
+See the note under `lineage.tsv` for what this costs.
+
+If you need either, call :func:`st_cnv_simulator.run` directly from Python: it returns the
+full result object in memory and you can serialise whichever parts you want.
 
 ## `qc/` and `synthetic/visual/`
 

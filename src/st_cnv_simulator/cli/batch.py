@@ -13,7 +13,6 @@ from __future__ import annotations
 import argparse
 import copy
 import os
-import pickle
 import random
 import shutil
 import subprocess
@@ -156,16 +155,75 @@ CT_COLORS = {
 MAJOR_SUBCLONE_MIN_CELL_FRAC = 0.05
 
 
+def _read_table(stem, **kwargs):
+    """Read a simulator output written either as Parquet or, with --no-parquet, TSV."""
+    parquet, tsv = stem + ".parquet", stem + ".tsv"
+    if os.path.exists(parquet):
+        return pd.read_parquet(parquet)
+    if os.path.exists(tsv):
+        return pd.read_csv(tsv, sep="\t", **kwargs)
+    raise FileNotFoundError(f"neither {parquet} nor {tsv} exists")
+
+
+def _cell_id_from_name(names):
+    """'Cell_1234' -> 1234."""
+    return pd.Series(names).astype(str).str.replace("Cell_", "", regex=False).astype(int).values
+
+
+def load_replicate_tables(rep_folder):
+    """Reconstruct the fields the QC code needs from the replicate's output tables.
+
+    The simulator no longer writes res.pkl (it reached ~10 GB per replicate), so
+    everything here comes from the much smaller TSV/Parquet outputs.
+    """
+    syn = os.path.join(rep_folder, "synthetic")
+
+    meta = pd.read_csv(
+        os.path.join(syn, "single_cell_data", "sc-meta_data.tsv"), sep="\t", index_col=0
+    )
+    cell_ids = _cell_id_from_name(meta.index)
+
+    clone_id = pd.to_numeric(meta["clone_id"], errors="coerce")
+    lineage = pd.read_csv(os.path.join(syn, "lineage.tsv"), sep="\t", index_col=0)
+
+    st_data = {}
+    st_meta_stem = os.path.join(syn, "spatial_data", "st-meta")
+    cell_by_spot_path = os.path.join(syn, "spatial_data", "cell_by_spot.txt")
+    if os.path.exists(st_meta_stem + ".parquet") or os.path.exists(st_meta_stem + ".tsv"):
+        st_meta = _read_table(st_meta_stem)
+        st_data["coordinates"] = st_meta[["x", "y"]].to_numpy(dtype=float)
+    if os.path.exists(cell_by_spot_path):
+        by_spot = []
+        with open(cell_by_spot_path) as fh:
+            for line in fh:
+                _, _, ids = line.partition(":")
+                ids = ids.strip()
+                by_spot.append([int(x) for x in ids.split(",") if x] if ids else [])
+        st_data["cell_by_spot"] = by_spot
+
+    return {
+        "tissue_data": {
+            "cell_type": meta["cell_type"].astype(str).to_numpy(),
+            "clone_id": clone_id.to_numpy(dtype=object),
+            "coordinates": meta[["x", "y"]].to_numpy(dtype=float),
+        },
+        "cell_ids": cell_ids,
+        "lineage": lineage,
+        "st_data": st_data,
+    }
+
+
 def analyze_replicate(rep_folder, min_frac=MAJOR_SUBCLONE_MIN_CELL_FRAC):
-    """Load res.pkl, count subclones, compute per-cell labels for QC plots."""
-    res_path = os.path.join(rep_folder, "res.pkl")
+    """Count subclones and compute per-cell labels for the QC plots."""
     event_log_path = os.path.join(rep_folder, "event_log.tsv")
 
-    if not os.path.exists(res_path):
-        return None, {"error": f"res.pkl not found in {rep_folder}"}
+    meta_path = os.path.join(
+        rep_folder, "synthetic", "single_cell_data", "sc-meta_data.tsv"
+    )
+    if not os.path.exists(meta_path):
+        return None, {"error": f"sc-meta_data.tsv not found under {rep_folder}"}
 
-    with open(res_path, "rb") as f:
-        res = pickle.load(f)
+    res = load_replicate_tables(rep_folder)
 
     cell_types = np.asarray(res.get("tissue_data", {}).get("cell_type", []))
     n_cells = int(cell_types.shape[0])
@@ -174,24 +232,33 @@ def analyze_replicate(rep_folder, min_frac=MAJOR_SUBCLONE_MIN_CELL_FRAC):
 
     cell_ids = np.asarray(res.get("cell_ids", []), dtype=int)
     clone_ids_raw = res.get("tissue_data", {}).get("clone_id", np.array([]))
-    clone_ids = np.array([int(x) if x is not None else -1 for x in clone_ids_raw])
+    clone_ids = np.array(
+        [-1 if (x is None or pd.isna(x)) else int(x) for x in clone_ids_raw]
+    )
 
     tumor_mask = clone_ids >= 0
     tumor_cell_ids = set(cell_ids[tumor_mask].tolist())
     n_tumor_cells = len(tumor_cell_ids)
 
-    lineage_all = res.get("lineage_all")
-    if lineage_all is None or not isinstance(lineage_all, pd.DataFrame):
-        lineage_all = res.get("lineage")
+    # lineage.tsv covers surviving tumour cells only. Chains that pass through a
+    # cell that died are therefore broken, which makes the descendant counts below
+    # a LOWER BOUND. The full ancestry used to come from res.pkl / lineage_all.tsv,
+    # neither of which is written any more. n_broken_links quantifies the gap.
+    lineage_all = res.get("lineage")
 
     parent_map = {}
-    if lineage_all is not None and isinstance(lineage_all, pd.DataFrame):
-        if "child_id" in lineage_all.columns and "parent_id" in lineage_all.columns:
-            for _, row in lineage_all.iterrows():
-                try:
-                    parent_map[int(row["child_id"])] = int(row["parent_id"])
-                except (TypeError, ValueError):
-                    continue
+    if isinstance(lineage_all, pd.DataFrame) and {"child_id", "parent_id"}.issubset(
+        lineage_all.columns
+    ):
+        for _, row in lineage_all.iterrows():
+            try:
+                parent_map[int(row["child_id"])] = int(row["parent_id"])
+            except (TypeError, ValueError):
+                # 'initial_seed' / 'dropped_cell' -- no numeric parent to record
+                continue
+
+    known_cells = set(parent_map)
+    n_broken_links = sum(1 for p in parent_map.values() if p >= 0 and p not in known_cells)
 
     children_map = {}
     for child, parent in parent_map.items():
@@ -312,6 +379,10 @@ def analyze_replicate(rep_folder, min_frac=MAJOR_SUBCLONE_MIN_CELL_FRAC):
         "founder_details": founder_details,
         "cell_subclone": cell_subclone, "cell_n_evol": cell_n_evol,
         "cell_n_total_cnv": cell_n_total_cnv,
+        # Ancestry links that reference a cell absent from lineage.tsv (it died).
+        # Non-zero means n_subclones / n_major_founders are lower bounds.
+        "n_broken_lineage_links": n_broken_links,
+        "subclone_counts_exact": n_broken_links == 0,
     }
     return res, stats
 
@@ -725,6 +796,12 @@ def main(argv=None) -> int:
             try:
                 res, stats = analyze_replicate(rep_folder)
                 if "error" not in stats:
+                    if not stats.get("subclone_counts_exact", True):
+                        print(
+                            f"   [NOTE] {stats['n_broken_lineage_links']} ancestry links point "
+                            "at cells that died and are absent from lineage.tsv; "
+                            f"n_subclones={stats['n_subclones']} is a lower bound."
+                        )
                     generate_qc_plots(res, stats, rep_folder, f"Rep_{i}")
                 else:
                     print(f"  [WARN] {stats['error']}")

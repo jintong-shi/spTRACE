@@ -12,11 +12,9 @@ import pytest
 pytestmark = pytest.mark.slow
 
 EXPECTED_OUTPUTS = [
-    "res.pkl",
     "event_log.tsv",
     "synthetic/genome.tsv",
     "synthetic/lineage.tsv",
-    "synthetic/lineage_all.tsv",
     "synthetic/all_cell_ids.tsv",
     "synthetic/cluster_lineage.tsv",
     "synthetic/single_cell_data/sc-expression.tsv",
@@ -62,6 +60,12 @@ def test_all_expected_outputs_exist(completed_run):
 
 def test_scratch_memmap_is_cleaned_up(completed_run):
     assert not (completed_run / "tmp").exists()
+
+
+def test_pickle_and_full_lineage_are_not_written(completed_run):
+    """res.pkl reached ~10 GB per replicate; neither it nor lineage_all.tsv is emitted."""
+    assert not (completed_run / "res.pkl").exists()
+    assert not (completed_run / "synthetic" / "lineage_all.tsv").exists()
 
 
 def test_single_cell_and_spot_tables_are_consistent(completed_run):
@@ -139,11 +143,8 @@ def test_same_seed_reproduces_every_output(repo_root, example_reference, tmp_pat
     run_simulation(repo_root, out_a, seed=99)
     run_simulation(repo_root, out_b, seed=99)
 
-    # res.pkl is excluded: pickles embed unordered container layouts.
     compared = 0
     for rel in EXPECTED_OUTPUTS:
-        if rel == "res.pkl":
-            continue
         a, b = out_a / rel, out_b / rel
         if a.exists() and b.exists():
             assert digest(a) == digest(b), f"{rel} differs between identical-seed runs"
