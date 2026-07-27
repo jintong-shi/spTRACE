@@ -24,6 +24,7 @@ import pandas as pd  # noqa: E402
 from .. import _toml as toml  # noqa: E402
 from .. import pipeline, utils  # noqa: E402
 from ..cnv_utils import clean_all_df  # noqa: E402
+from ..qc import analyze_replicate, generate_qc_plots  # noqa: E402
 
 # Keys under [files] that hold filesystem paths. Relative paths in a design
 # file are resolved against the directory containing that design file, so a
@@ -817,6 +818,31 @@ def main(argv=None) -> int:
                 fn(res, qc_dir)
             except Exception as exc:  # QC figures must never fail a completed run
                 print(f"WARN: failed to draw {label}: {exc}")
+
+        # Subclone QC: founder clones, evolved subclones, per-cell membership and the
+        # spot-level views. This reads the tables just written, so it is the same
+        # analysis stcnv-batch runs per replicate.
+        try:
+            qc_res, stats = analyze_replicate(out_dir_main)
+            if "error" in stats:
+                print(f"WARN: subclone QC skipped: {stats['error']}")
+            else:
+                if not stats.get("subclone_counts_exact", True):
+                    print(
+                        f"NOTE: {stats['n_broken_lineage_links']} ancestry links point at "
+                        f"cells absent from lineage.tsv; n_subclones={stats['n_subclones']} "
+                        "is a lower bound."
+                    )
+                generate_qc_plots(
+                    qc_res, stats, out_dir_main, os.path.basename(os.path.normpath(out_dir_main))
+                )
+                print(
+                    f"Subclone QC: {stats['n_subclones']} subclones "
+                    f"({stats['n_base_clones']} founder + {stats['n_major_founders']} evolved), "
+                    f"tumour purity {stats['purity']:.3f}"
+                )
+        except Exception as exc:
+            print(f"WARN: subclone QC failed: {exc}")
 
     return 0
 

@@ -165,11 +165,21 @@ Every diagnostic figure lands here. All of them are skipped with `--skip-visual`
 | `cnv_burden_spatial.png` | per-cell count of genes at a non-diploid copy number, over space |
 | `cnv_burden_with_spot_array.png` | the same, with the spot capture array overlaid |
 | `sc_celltype_spatial.pdf` | single cells coloured by cell type |
+| `sc_celltype_spatial.png` | the same, with the shared cell-type palette |
 | `st_celltype_proportions.pdf` | per-spot proportion map, one panel per cell type |
+| `celltype_proportions.png` | cell-type composition bar chart, annotated with tumour purity |
+| `subclone_spatial.png` | every cell coloured by its subclone (founder clones and evolved subclones) |
+| `cnv_events_spatial.png` | per-cell number of CNV events, over space |
+| `st_subclone_count_spatial.png` | how many distinct subclones each spot contains |
+| `st_major_subclone_spatial.png` | the dominant subclone in each spot |
 
-The first two used to be written to `synthetic/visual/` as `tissue.png` and
-`tissue_w_array.png`. They now sit alongside the rest, so there is one figure
-directory rather than two.
+`stcnv-simulate` and each replicate of `stcnv-batch` produce the same set. The subclone
+panels come from :func:`st_cnv_simulator.qc.analyze_replicate`, which reconstructs the
+clone tree from `lineage_all.tsv` and `event_log.tsv`; the run also prints a one-line
+summary (`Subclone QC: N subclones ... tumour purity ...`).
+
+The first two figures used to live in `synthetic/visual/` as `tissue.png` and
+`tissue_w_array.png`.
 
 `stcnv-batch` writes further per-replicate QC figures covering subclone spatial layout,
 per-spot subclone counts and CNV burden.

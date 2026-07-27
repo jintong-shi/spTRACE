@@ -109,7 +109,7 @@ part-way through a long run.
 <output>/
 ├── event_log.tsv                    every CNV event: iteration, cell, clone, segment, haplotype
 ├── baf/                             AD.mtx, DP.mtx, snp_info.csv, barcodes.tsv
-├── qc/                              all diagnostic figures
+├── qc/                              all diagnostic figures, incl. subclone maps
 └── synthetic/
     ├── genome.tsv                   gene → chromosome, start, end
     ├── lineage.tsv                  surviving tumour cells: child → parent

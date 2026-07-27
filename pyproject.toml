@@ -96,3 +96,5 @@ ignore = [
 "src/st_cnv_simulator/cnv_utils.py" = ["UP", "F401", "E701", "E702", "I001", "W293"]
 "src/st_cnv_simulator/cnv_logging.py" = ["UP", "I001", "W293"]
 "src/st_cnv_simulator/cli/batch.py" = ["UP", "E701", "E702", "I001", "W293"]
+# qc.py is the QC analysis and plotting code lifted verbatim out of batch.py.
+"src/st_cnv_simulator/qc.py" = ["UP", "E701", "E702", "I001", "W293", "B007"]

@@ -116,6 +116,24 @@ the internal version. New code is expected to be clean.
   `n_broken_lineage_links` / `subclone_counts_exact` if it ever has to fall back, so
   `n_subclones` can never be silently understated.
 
+### QC available from a single run
+
+- The subclone figures (`subclone_spatial.png`, `cnv_events_spatial.png`,
+  `st_subclone_count_spatial.png`, `st_major_subclone_spatial.png`,
+  `celltype_proportions.png`, `sc_celltype_spatial.png`) used to be produced **only** by the
+  batch runner, so a plain single simulation never got them. The QC analysis and plotting
+  moved out of `cli/batch.py` into a new library module `st_cnv_simulator.qc`, and
+  `stcnv-simulate` now runs it too. A single run and a batch replicate produce the same ten
+  figures, and the run prints a one-line subclone summary.
+
+  `st_cnv_simulator.qc.analyze_replicate()` and `generate_qc_plots()` are importable, so QC
+  can also be re-run over an existing output directory without re-simulating.
+
+  Two consequences. `stcnv-batch` no longer runs the QC itself (it would have run twice per
+  replicate); figure titles now carry the replicate folder name rather than `Rep_<i>`. And
+  `--skip-visual` now suppresses the subclone figures too, where before the batch runner
+  drew them regardless.
+
 ### Figures consolidated
 
 - `synthetic/visual/` is gone. Its two figures moved into `qc/` and were renamed to say

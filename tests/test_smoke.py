@@ -78,9 +78,17 @@ def test_all_figures_live_in_one_place(repo_root, example_reference, tmp_path):
     figures = sorted(p.name for p in out.rglob("*.png")) + sorted(
         p.name for p in out.rglob("*.pdf")
     )
+    # A single run gets the same figure set as a batch replicate, including the
+    # subclone views, which used to be produced only by stcnv-batch.
     assert figures == [
+        "celltype_proportions.png",
         "cnv_burden_spatial.png",
         "cnv_burden_with_spot_array.png",
+        "cnv_events_spatial.png",
+        "sc_celltype_spatial.png",
+        "st_major_subclone_spatial.png",
+        "st_subclone_count_spatial.png",
+        "subclone_spatial.png",
         "sc_celltype_spatial.pdf",
         "st_celltype_proportions.pdf",
     ]
