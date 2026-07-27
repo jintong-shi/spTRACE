@@ -35,14 +35,14 @@ dependencies = [
     "scipy>=1.9",
     "scikit-learn>=1.1",
     "matplotlib>=3.6",
-    "statsmodels>=0.13",
     "joblib>=1.2",
     "tqdm>=4.64",
+    # Required, not optional: tables are written as Parquet unless --no-parquet is passed.
+    "pyarrow>=10.0",
     "tomli>=2.0; python_version < '3.11'",
 ]
 
 [project.optional-dependencies]
-parquet = ["pyarrow>=10.0"]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",

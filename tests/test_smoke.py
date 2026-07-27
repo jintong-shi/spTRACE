@@ -109,6 +109,29 @@ def test_all_figures_live_in_one_place(repo_root, example_reference, tmp_path):
     assert all(p.parent.name == "qc" for p in out.rglob("*.pdf"))
 
 
+def test_default_run_writes_parquet(repo_root, example_reference, tmp_path):
+    """The default output format is Parquet, so pyarrow is a required dependency.
+
+    Every other test passes --no-parquet, which is how pyarrow being declared an
+    optional extra went unnoticed: a plain install could not complete a default run.
+    """
+    import pandas as pd
+
+    out = tmp_path / "pq"
+    cmd = [
+        sys.executable, "-m", "st_cnv_simulator.cli.simulate",
+        "--design", str(repo_root / "configs" / "design_example.toml"),
+        "--output", str(out), "--seed", "42", "--skip-visual",
+    ]
+    proc = subprocess.run(cmd, capture_output=True, text=True, cwd=repo_root)
+    assert proc.returncode == 0, f"{proc.stdout[-2000:]}\n{proc.stderr[-2000:]}"
+
+    expr = out / "synthetic" / "single_cell_data" / "sc-expression.parquet"
+    assert expr.is_file()
+    assert not expr.with_suffix(".tsv").exists()
+    assert len(pd.read_parquet(expr)) > 0
+
+
 def test_pickle_is_not_written(completed_run):
     """res.pkl reached ~10 GB per replicate and is no longer emitted."""
     assert not (completed_run / "res.pkl").exists()

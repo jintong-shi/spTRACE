@@ -17,7 +17,8 @@ definitions differ — each a deliberate fix listed below:
 | `pipeline.py` | `run` | gained an `n_jobs` parameter |
 
 Import blocks also changed: `hashlib` added to `model.py`, a missing `utils` import added to
-`formatting.py`, and five unused imports removed from `pipeline.py`.
+`formatting.py`, five unused imports removed from `pipeline.py`, and the two unused
+`statsmodels` imports removed from `formatting.py`.
 
 ### Packaging
 
@@ -36,6 +37,14 @@ Import blocks also changed: `hashlib` added to `model.py`, a missing `utils` imp
   CalicoST.
 - Added `.gitignore`, MIT `LICENSE`, `CITATION.cff`, `CONTRIBUTING.md`, a GitHub Actions CI
   workflow, and a test suite (39 tests).
+- Added `environment.yml` for conda users. It pins Python 3.11 and takes the compiled
+  dependencies from conda-forge.
+- `pyarrow` moved from the optional `[parquet]` extra into the required dependencies, and the
+  extra was dropped. Parquet is the default output format, so `pip install .` without the
+  extra left the default run unable to write its tables. `--no-parquet` remains the way to
+  write TSV instead, and needs nothing installed.
+- Dropped `statsmodels` from the dependencies. `formatting.py` imported `statsmodels.api` and
+  `multipletests` without using either, which also pulled in `patsy`.
 
 ### Bug fixes
 
@@ -79,9 +88,10 @@ Import blocks also changed: `hashlib` added to `model.py`, a missing `utils` imp
 
 `ruff check` passes, but the numerical core is exempted from several rules via
 `per-file-ignores` in `pyproject.toml`: legacy typing spellings (`Dict`, `Optional`),
-around 20 unused imports, and multiple statements per line. Two of those unused imports
-(`statsmodels`, several `scipy.stats` functions) are the only reason those packages are
-declared dependencies — dropping them would lighten the install.
+around 20 unused imports, and multiple statements per line. The unused imports that pulled in
+a whole dependency are gone; the rest name modules already required for other reasons
+(`pearsonr`, `spearmanr` and `mannwhitneyu` are unused, but `scipy` is needed for
+`stats.betabinom` and `scipy.io`), so removing them lightens nothing.
 
 `ruff format` is likewise not enforced repo-wide. Both were left alone to keep the release
 free of behaviour-neutral churn through the simulation code, so it stays diffable against

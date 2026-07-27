@@ -25,7 +25,14 @@ clone assignments, and allelic imbalance.
 ```bash
 git clone https://github.com/jintongshi/st-cnv-simulator.git
 cd st-cnv-simulator
-pip install -e ".[parquet]"        # drop [parquet] and pass --no-parquet to write TSV
+pip install -e .
+```
+
+Or, to get a pinned interpreter and the compiled dependencies from conda-forge:
+
+```bash
+conda env create -f environment.yml    # must be run from the repository root
+conda activate stcnv-sim
 ```
 
 Python 3.10 or newer. No GPU required.

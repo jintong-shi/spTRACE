@@ -1,0 +1,30 @@
+# Conda environment for st-cnv-simulator.
+#
+#   conda env create -f environment.yml     # run from the repository root
+#   conda activate stcnv-sim
+#   stcnv-simulate --design configs/design_example.toml --output out
+#
+# Python is pinned to 3.11 so tomllib is in the standard library; the tomli
+# backport listed in pyproject.toml is only needed on 3.10.
+# Add the test tools with:  pip install -e ".[dev]"
+name: stcnv-sim
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.11
+  - numpy>=1.23
+  - pandas>=1.5
+  - scipy>=1.9
+  - scikit-learn>=1.1
+  # matplotlib-base omits the GUI toolkits; the CLIs force the Agg backend.
+  - matplotlib-base>=3.6
+  - joblib>=1.2
+  - tqdm>=4.64
+  # Required, not optional: tables are written as Parquet unless --no-parquet is passed.
+  - pyarrow>=10
+  - pip
+  - pip:
+      # Installs the stcnv-* commands. Editable, so a git pull needs no reinstall.
+      - -e .

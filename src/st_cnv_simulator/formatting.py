@@ -10,8 +10,6 @@ import os, tempfile
 from scipy.stats import pearsonr
 import matplotlib.pyplot as plt
 from scipy.stats import spearmanr, mannwhitneyu
-import statsmodels.api as sm
-from statsmodels.stats.multitest import multipletests
 import scipy.stats as stats
 from tqdm import tqdm
 
