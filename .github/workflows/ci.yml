@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - run: ruff check .
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install
+        run: pip install -e ".[dev,parquet]"
+
+      - name: Build the example reference set
+        run: stcnv-make-example-reference
+
+      - name: Unit tests
+        run: pytest -m "not slow" -q
+
+      - name: End-to-end tests
+        run: pytest -m slow -q
+
+  reproducibility:
+    # The property the simulator's usefulness rests on. Checked separately, and
+    # under a hostile PYTHONHASHSEED, so a regression here is unmistakable.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: pip install -e ".[dev,parquet]"
+
+      - name: Build the example reference set
+        run: stcnv-make-example-reference
+
+      - name: Run twice at the same seed, in different interpreters
+        env:
+          SEED: "20260414"
+        run: |
+          PYTHONHASHSEED=1 stcnv-simulate --design configs/design_example.toml \
+            --output out/a --seed "$SEED" --skip-visual --no-parquet
+          PYTHONHASHSEED=random stcnv-simulate --design configs/design_example.toml \
+            --output out/b --seed "$SEED" --skip-visual --no-parquet
+
+      - name: Compare every output file
+        run: |
+          set -euo pipefail
+          # res.pkl is excluded: pickles embed unordered container layouts.
+          find out/a -type f ! -name res.pkl -printf '%P\n' | sort > /tmp/files.txt
+          test -s /tmp/files.txt
+          status=0
+          while read -r f; do
+            if ! cmp -s "out/a/$f" "out/b/$f"; then
+              echo "::error file=$f::differs between two runs at the same seed"
+              status=1
+            fi
+          done < /tmp/files.txt
+          echo "compared $(wc -l < /tmp/files.txt) files"
+          exit $status

@@ -1,0 +1,142 @@
+# Small, fast design used by the tutorial and the smoke test.
+#
+# It points at the generated example reference set, so run this first:
+#
+#   stcnv-make-example-reference
+#   stcnv-simulate --design configs/design_example.toml --output out/example
+#
+# The example reference contains a SYNTHETIC expression matrix and a SYNTHETIC
+# CNV catalogue. Use it to check the pipeline runs, not to produce results.
+
+[files]
+chr_lengths_file = "../data/reference/example/chr_lengths.csv"
+gene_table_file = "../data/reference/example/gene_order.csv"
+refexp_file = "../data/reference/example/counts.tsv"
+refcelltype_file = "../data/reference/example/celltype.tsv"
+snp_file = "../data/reference/example/mapped_snps.csv"
+cnv_catalog_file = "../data/reference/example/cnv_catalog.csv"
+
+normal_celltypes = ["T", "Fibroblast", "Macrophage", "T_reg", "Endothelial", "Hepatocyte", "Plasma", "B", "NK"]
+normal_original_celltype = "Hepatocyte"
+
+[normal_celltype_proportions]
+Hepatocyte = 0.35
+Fibroblast = 0.3
+Macrophage = 0.16
+Endothelial = 0.09
+T = 0.04
+B = 0.03
+T_reg = 0.02
+Plasma = 0.01
+NK = 0.005
+
+[population]
+n_initial_cells = 2
+domain_side_size = 60
+fraction_drop = 0.02
+background_fill_prob = 0.70
+normal_action_rates = [0.80, 0.12, 0.06, 0.02]
+n_clusters = 3
+max_cells = 2500
+max_iterations = 40
+
+    [population.transitions]
+    s0s1 = 0.1
+    s1s0 = 0.3
+
+    [population.rates_state_0]
+    move_rate = 0.4
+    stay_rate = 0.1
+    spawn_rate = 0.8
+    death_rate = 0
+    mutation_rate = 0
+
+    [population.rates_state_1]
+    move_rate = 0.25
+    stay_rate = 0.45
+    spawn_rate = 0.55
+    death_rate = 0.018
+    mutation_rate = 0.02
+
+[initial_cnv]
+n_shared = 3
+n_private = [2, 2]
+
+[expression]
+lognorm_params_tumor = [7.0, 0.4]
+lognorm_params_normal = [6.0, 0.4]
+dirichlet_precision = 100
+
+[spatial]
+spot_radius = 2.5
+n_spots_x = 10
+n_spots_y = 10
+st_theta = 10
+st_eff = 0.2
+
+[drip]
+enable = true
+every = 8
+immune_tls_share = 0.60
+per_cycle_max = 200
+
+[tls]
+n_tls = 1
+r_tls = 4
+r_block = 2
+min_center_dist = 15.0
+min_edge_gap = 1.0
+border_margin = 0
+suppress_sigma = 3
+tls_celltypes = ["T", "B"]
+spawn_mod = [-0.10, -0.05]
+death_mod = [0.05, 0.02]
+
+[immune_soft]
+enable = true
+labels = ["T", "B", "NK", "Plasma"]
+spawn_mod = [-0.05, -0.02]
+death_mod = [0.02, 0.01]
+sigma = 2.0
+
+[weights]
+mu_s = 4.0
+w_s = 8.0
+sigma_i = 3.5
+delta_epi = 2.0
+g_tls = 5.0
+
+[perturb]
+weight_temperature = 1.0
+uniform_tail = 0.0002
+noise_gain = 0.02
+noise_sigma = 12.0
+micro_blobs_per_group = 0
+micro_blob_radius = 0
+micro_blob_gain = 1.0
+jitter_prob = 0.02
+jitter_radius = 1
+
+[auto_iter]
+enable = true
+occupancy_target = 0.80
+
+[reproducibility]
+seed = 1
+
+[mutation_schedule]
+enable_state1_age_decay = true
+half_life_iter = 60.0
+min_factor = 0
+
+[celltype_groups]
+T = "Immune"
+B = "Immune"
+NK = "Immune"
+Macrophage = "Immune"
+Plasma = "Immune"
+T_reg = "Immune"
+Fibroblast = "Stromal"
+Endothelial = "Stromal"
+Epithelial = "Epithelial"
+Hepatocyte = "Epithelial"

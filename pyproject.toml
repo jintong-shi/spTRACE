@@ -1,0 +1,98 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "st-cnv-simulator"
+version = "0.1.0"
+description = "Agent-based simulator of spatial transcriptomics data with allele-specific copy-number variation"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Jintong Shi", email = "jintongs@kth.se" }]
+keywords = [
+    "spatial-transcriptomics",
+    "copy-number-variation",
+    "simulation",
+    "benchmarking",
+    "single-cell",
+    "tumour-heterogeneity",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = [
+    "numpy>=1.23",
+    "pandas>=1.5",
+    "scipy>=1.9",
+    "scikit-learn>=1.1",
+    "matplotlib>=3.6",
+    "statsmodels>=0.13",
+    "joblib>=1.2",
+    "tqdm>=4.64",
+    "tomli>=2.0; python_version < '3.11'",
+]
+
+[project.optional-dependencies]
+parquet = ["pyarrow>=10.0"]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.4",
+]
+
+[project.urls]
+Homepage = "https://github.com/jintongshi/st-cnv-simulator"
+Issues = "https://github.com/jintongshi/st-cnv-simulator/issues"
+
+[project.scripts]
+stcnv-simulate = "st_cnv_simulator.cli.simulate:main"
+stcnv-batch = "st_cnv_simulator.cli.batch:main"
+stcnv-export-numbat = "st_cnv_simulator.cli.export_numbat:main"
+stcnv-prep-snps = "st_cnv_simulator.cli.prep_snps:main"
+stcnv-make-example-reference = "st_cnv_simulator.cli.make_example_reference:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+markers = [
+    "slow: end-to-end runs that execute a real simulation (deselect with -m 'not slow')",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = [
+    "E501",  # long lines are common in dense numeric expressions
+    "E741",  # `l`/`I` are used as lattice indices throughout
+    "B905",  # zip() without strict=, for 3.9-style compatibility
+]
+
+# The numerical core carries pre-existing lint debt: legacy typing spellings
+# (Dict/Optional rather than dict/X | None), unused imports, and several
+# statements per line. Cleaning it up would touch simulation code without
+# changing behaviour, so it is tracked here rather than folded into the release.
+# Do not add files to this list; new code is expected to be clean.
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E402"]
+"src/st_cnv_simulator/model.py" = ["UP", "F401", "F841", "E701", "E702", "E401", "I001", "B007", "W293"]
+"src/st_cnv_simulator/formatting.py" = ["UP", "F401", "E701", "E702", "E401", "I001", "W293"]
+"src/st_cnv_simulator/utils.py" = ["UP", "F401", "F811", "F841", "E701", "E702", "E401", "I001", "W293"]
+"src/st_cnv_simulator/pipeline.py" = ["UP", "F401", "I001", "W293"]
+"src/st_cnv_simulator/cnv_utils.py" = ["UP", "F401", "E701", "E702", "I001", "W293"]
+"src/st_cnv_simulator/cnv_logging.py" = ["UP", "I001", "W293"]
+"src/st_cnv_simulator/cli/batch.py" = ["UP", "E701", "E702", "I001", "W293"]

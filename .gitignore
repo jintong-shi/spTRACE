@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+build/
+dist/
+.eggs/
+.venv/
+venv/
+env/
+
+# Testing / tooling
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# Simulator output — never commit generated data
+out/
+output/
+results/
+Batch_Output/
+Complete_Batch_*/
+*.pkl
+*.parquet
+*.mtx
+*.tsv.gz
+res.pkl
+
+# Large reference data that is fetched, not vendored (see data/reference/README.md)
+data/reference/counts.tsv
+data/reference/cnv_catalog.csv
+data/reference/*.txt.gz
+
+# Cluster logs
+*.out
+*.err
+slurm-*

@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+title: "st-cnv-simulator: agent-based simulation of spatial transcriptomics data with allele-specific copy-number variation"
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - given-names: Jintong
+    family-names: Shi
+    email: jintongs@kth.se
+    affiliation: "KTH Royal Institute of Technology"
+version: 0.1.0
+license: MIT
+repository-code: "https://github.com/jintongshi/st-cnv-simulator"
+abstract: >-
+  An agent-based simulator that grows a tumour cell population on a 2-D lattice,
+  mutating each cell's diploid genome with allele-specific copy-number events drawn
+  from a real CNV catalogue, and infusing normal tumour-microenvironment cells during
+  growth according to cell-type-specific spatial weight maps. The resulting tissue is
+  rendered as single-cell expression, spot-level spatial transcriptomics, and allele
+  (AD/DP) count matrices, with complete ground truth for benchmarking spatial
+  copy-number inference methods.
+keywords:
+  - spatial transcriptomics
+  - copy number variation
+  - simulation
+  - benchmarking
+  - tumour heterogeneity
+  - single-cell
