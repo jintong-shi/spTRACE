@@ -102,20 +102,19 @@ the internal version. New code is expected to be clean.
 ### Outputs no longer written
 
 - **`res.pkl` is gone.** It reached ~10 GB per replicate (measured on a 28k-cell run), which
-  dominated the on-disk size of a batch. Everything downstream code read from it is
-  available in the TSV/Parquet tables. `stcnv-batch`'s QC step was rewired to load those
-  tables via a new `load_replicate_tables()` instead of unpickling.
-- **`synthetic/lineage_all.tsv` is gone** — ancestry for every cell ever created, including
-  those that died. `lineage.tsv` (surviving tumour cells) remains.
+  dominated the on-disk size of a batch, and pickles are version-fragile besides. Everything
+  downstream code read from it is available in the TSV/Parquet tables. `stcnv-batch`'s QC
+  step was rewired to load those tables via a new `load_replicate_tables()` instead of
+  unpickling. `st_cnv_simulator.run()` still returns the full result object in memory, so a
+  Python caller can serialise whatever it needs.
 
-  Consequence: an ancestry walk from a founder to its surviving descendants can now hit a
-  dead intermediate and stop early, so descendant counts are lower bounds. On a 28k-cell
-  replicate this affected 2,008 of 27,878 links. `analyze_replicate` reports the count as
-  `n_broken_lineage_links` / `subclone_counts_exact`, and `stcnv-batch` prints a note when
-  it is non-zero, so `n_subclones` is never silently understated.
-
-  `st_cnv_simulator.run()` still returns the full result object in memory, so a Python
-  caller can serialise whatever it needs.
+  `synthetic/lineage_all.tsv` is still written. It is only ~1 MB, and dropping it turned out
+  to cost correctness: `lineage.tsv` covers surviving tumour cells only, so an ancestry walk
+  over it breaks at the first cell that died. Measured across eight replicates, that
+  understated the evolved-subclone count in six of them (3 major founders became 1 in one
+  case). `stcnv-batch` now prefers `lineage_all.tsv` and reports
+  `n_broken_lineage_links` / `subclone_counts_exact` if it ever has to fall back, so
+  `n_subclones` can never be silently understated.
 
 ### Behaviour changes to be aware of
 

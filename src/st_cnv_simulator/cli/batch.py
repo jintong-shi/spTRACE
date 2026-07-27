@@ -186,6 +186,13 @@ def load_replicate_tables(rep_folder):
     clone_id = pd.to_numeric(meta["clone_id"], errors="coerce")
     lineage = pd.read_csv(os.path.join(syn, "lineage.tsv"), sep="\t", index_col=0)
 
+    # Prefer the full ancestry: lineage.tsv holds surviving tumour cells only, so
+    # founder -> descendant walks over it stop at the first cell that died.
+    lineage_all = None
+    lineage_all_path = os.path.join(syn, "lineage_all.tsv")
+    if os.path.exists(lineage_all_path):
+        lineage_all = pd.read_csv(lineage_all_path, sep="\t", index_col=0)
+
     st_data = {}
     st_meta_stem = os.path.join(syn, "spatial_data", "st-meta")
     cell_by_spot_path = os.path.join(syn, "spatial_data", "cell_by_spot.txt")
@@ -209,6 +216,7 @@ def load_replicate_tables(rep_folder):
         },
         "cell_ids": cell_ids,
         "lineage": lineage,
+        "lineage_all": lineage_all,
         "st_data": st_data,
     }
 
@@ -240,11 +248,13 @@ def analyze_replicate(rep_folder, min_frac=MAJOR_SUBCLONE_MIN_CELL_FRAC):
     tumor_cell_ids = set(cell_ids[tumor_mask].tolist())
     n_tumor_cells = len(tumor_cell_ids)
 
-    # lineage.tsv covers surviving tumour cells only. Chains that pass through a
-    # cell that died are therefore broken, which makes the descendant counts below
-    # a LOWER BOUND. The full ancestry used to come from res.pkl / lineage_all.tsv,
-    # neither of which is written any more. n_broken_links quantifies the gap.
-    lineage_all = res.get("lineage")
+    # lineage_all.tsv carries every cell ever created. Falling back to lineage.tsv
+    # (surviving tumour cells only) breaks any chain that passes through a dead cell,
+    # which turns the descendant counts below into a LOWER BOUND. n_broken_links
+    # quantifies the gap and is 0 when the full ancestry is available.
+    lineage_all = res.get("lineage_all")
+    if lineage_all is None or not isinstance(lineage_all, pd.DataFrame):
+        lineage_all = res.get("lineage")
 
     parent_map = {}
     if isinstance(lineage_all, pd.DataFrame) and {"child_id", "parent_id"}.issubset(

@@ -113,6 +113,7 @@ part-way through a long run.
 └── synthetic/
     ├── genome.tsv                   gene → chromosome, start, end
     ├── lineage.tsv                  surviving tumour cells: child → parent
+    ├── lineage_all.tsv              full ancestry, including cells that died
     ├── all_cell_ids.tsv             every cell ID ever created, with a survival flag
     ├── cluster_lineage.tsv          cluster-level ancestry matrix
     ├── single_cell_data/            sc-expression, sc-genome_profile, sc-meta_data

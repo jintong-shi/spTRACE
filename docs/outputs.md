@@ -13,6 +13,7 @@ files the row label becomes a leading column named `index`.
 └── synthetic/
     ├── genome.tsv
     ├── lineage.tsv
+    ├── lineage_all.tsv
     ├── all_cell_ids.tsv
     ├── cluster_lineage.tsv
     ├── single_cell_data/
@@ -28,7 +29,7 @@ files the row label becomes a leading column named `index`.
 | What is each cell's copy number, per gene? | `single_cell_data/sc-genome_profile` |
 | What is each spot's average copy number, per gene? | `spatial_data/st-genome_profile` |
 | Which cells belong to which clone? | `single_cell_data/sc-meta_data` (`clone_id`) |
-| How are clones related? | `lineage.tsv` |
+| How are clones related? | `lineage.tsv`, `lineage_all.tsv` |
 | Which spots are tumour vs benign? | `spatial_data/st-annotation` |
 | Which cells landed in which spot? | `spatial_data/cell_by_spot.txt` |
 | Where does each gene sit on the genome? | `genome.tsv` |
@@ -101,17 +102,19 @@ containing no cells are all-zero and annotated from an empty mean.
 |---|---|
 | `genome.tsv` | `gene`, `chr`, `start`, `end`, `mid`. Row label equals the `gene` column, and rows are in the same order as the expression matrix columns. |
 | `lineage.tsv` | `child_id`, `parent_id` for **surviving tumour cells**. `parent_id` is a cell ID, or `initial_seed` for a founder, or `dropped_cell` if the parent is unknown. |
+| `lineage_all.tsv` | the same for **every** cell ever created, including those that died; `parent_id` is numeric, `-1` for a founder. |
 | `all_cell_ids.tsv` | `cell_id`, `cell_name`, `is_survived` — the map from IDs to the final tables. |
 | `cluster_lineage.tsv` | clusters × clusters ancestry counts. |
 
-`lineage.tsv` is the tree you can compare a clone-inference method against.
+`lineage.tsv` is the tree you can compare a clone-inference method against;
+`lineage_all.tsv` is the true generative history, which no method can recover in full
+because dead cells leave no data.
 
-Cells that died are not in it: the simulator no longer emits the full generative
-history. `all_cell_ids.tsv` still tells you *which* cells existed and whether they
-survived, but not their parents. One consequence is that walking an ancestry chain from
-a founder to its surviving descendants can hit a dead intermediate and stop early, so
-descendant counts derived this way — including `stcnv-batch`'s subclone statistics — are
-lower bounds. Batch runs print how many links are affected.
+Use `lineage_all.tsv` for anything that walks ancestry. `lineage.tsv` omits cells that
+died, so a founder-to-descendants walk over it breaks at the first dead intermediate and
+understates the count — on a 28k-cell replicate that turned 3 evolved subclones into 1.
+`stcnv-batch` prefers `lineage_all.tsv` and reports `n_broken_lineage_links` if it ever
+has to fall back.
 
 ## `baf/`
 
@@ -151,10 +154,7 @@ needs is in the tables above. The one field it held that has no tabular equivale
 `genome_per_chr` (per-cell, per-haplotype gene counts); the AD/DP matrices in `baf/` carry
 the allele-level signal derived from it.
 
-**`lineage_all.tsv`** — ancestry for every cell ever created, including those that died.
-See the note under `lineage.tsv` for what this costs.
-
-If you need either, call :func:`st_cnv_simulator.run` directly from Python: it returns the
+If you need it, call :func:`st_cnv_simulator.run` directly from Python: it returns the
 full result object in memory and you can serialise whichever parts you want.
 
 ## `qc/` and `synthetic/visual/`

@@ -15,6 +15,7 @@ EXPECTED_OUTPUTS = [
     "event_log.tsv",
     "synthetic/genome.tsv",
     "synthetic/lineage.tsv",
+    "synthetic/lineage_all.tsv",
     "synthetic/all_cell_ids.tsv",
     "synthetic/cluster_lineage.tsv",
     "synthetic/single_cell_data/sc-expression.tsv",
@@ -62,10 +63,32 @@ def test_scratch_memmap_is_cleaned_up(completed_run):
     assert not (completed_run / "tmp").exists()
 
 
-def test_pickle_and_full_lineage_are_not_written(completed_run):
-    """res.pkl reached ~10 GB per replicate; neither it nor lineage_all.tsv is emitted."""
+def test_pickle_is_not_written(completed_run):
+    """res.pkl reached ~10 GB per replicate and is no longer emitted."""
     assert not (completed_run / "res.pkl").exists()
-    assert not (completed_run / "synthetic" / "lineage_all.tsv").exists()
+
+
+def test_full_ancestry_is_written_and_covers_dead_cells(completed_run):
+    """lineage_all.tsv must be a strict superset of lineage.tsv.
+
+    Without it, walking a founder to its surviving descendants stops at the first
+    cell that died, which understates subclone counts.
+    """
+    import pandas as pd
+
+    all_lin = pd.read_csv(completed_run / "synthetic/lineage_all.tsv", sep="\t", index_col=0)
+    surviving = pd.read_csv(completed_run / "synthetic/lineage.tsv", sep="\t", index_col=0)
+
+    assert len(all_lin) >= len(surviving)
+    assert set(surviving["child_id"]) <= set(all_lin["child_id"])
+    # Founders are encoded as -1 here, not as the 'initial_seed' label lineage.tsv uses.
+    assert pd.to_numeric(all_lin["parent_id"], errors="coerce").notna().all()
+
+    # Every numeric parent must itself be present, so no chain can break.
+    children = set(all_lin["child_id"].astype(int))
+    parents = all_lin["parent_id"].astype(int)
+    dangling = [p for p in parents if p >= 0 and p not in children]
+    assert not dangling, f"{len(dangling)} ancestry links point at an absent cell"
 
 
 def test_single_cell_and_spot_tables_are_consistent(completed_run):

@@ -331,6 +331,19 @@ def extract_results(
     lineage_df = lineage_df[lineage_df["child_id"].isin(cell_ids)].copy()
     lineage_df.index = [f"Cell_{int(cid)}" for cid in lineage_df["child_id"].astype(int)]
 
+    # Full ancestry, including cells that died. Only ~1 MB, and without it any walk
+    # from a founder to its surviving descendants breaks at the first dead
+    # intermediate, understating subclone counts.
+    lineage_all_df = None
+    if isinstance(res.get("lineage_all"), pd.DataFrame) and {"child_id", "parent_id"}.issubset(
+        res["lineage_all"].columns
+    ):
+        lineage_all_df = res["lineage_all"][["child_id", "parent_id"]].copy()
+        lineage_all_df = lineage_all_df.sort_values("child_id").reset_index(drop=True)
+        lineage_all_df.index = [
+            f"Cell_{int(cid)}" for cid in lineage_all_df["child_id"].astype(int)
+        ]
+
     genome_data = res["genome_data"]
     genome_data[["start", "end"]] = genome_data[["start", "end"]].astype(float).astype(int)
     # genome_data comes back in genomic order (chromosome, then position), while
@@ -350,6 +363,9 @@ def extract_results(
         [cluster_lineage, lineage_df, genome_data], ["cluster_lineage", "lineage", "genome"]
     ):
         df.to_csv(os.path.join(out_dir, name + ".tsv"), sep="\t")
+
+    if lineage_all_df is not None:
+        lineage_all_df.to_csv(os.path.join(out_dir, "lineage_all.tsv"), sep="\t")
 
     if "all_cell_ids" in res:
         all_ids = np.asarray(res["all_cell_ids"], dtype=int)
