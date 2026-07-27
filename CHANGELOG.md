@@ -116,6 +116,14 @@ the internal version. New code is expected to be clean.
   `n_broken_lineage_links` / `subclone_counts_exact` if it ever has to fall back, so
   `n_subclones` can never be silently understated.
 
+### Figures consolidated
+
+- `synthetic/visual/` is gone. Its two figures moved into `qc/` and were renamed to say
+  what they plot: `tissue.png` → `cnv_burden_spatial.png`, `tissue_w_array.png` →
+  `cnv_burden_with_spot_array.png`. There is now one figure directory instead of two, and
+  in batch runs `qc/cnv_events_spatial.png` no longer sits in a different folder from the
+  near-identical `visual/tissue.png`. `--skip-visual` still suppresses all of them.
+
 ### Behaviour changes to be aware of
 
 - `STCNV_NO_PARQUET` and `STCNV_SKIP_VISUAL` environment variables were replaced by

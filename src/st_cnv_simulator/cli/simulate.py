@@ -200,7 +200,6 @@ def extract_results(
     common_gene_order,
     *,
     no_parquet: bool = False,
-    skip_visual: bool = False,
     overwrite: bool = False,
 ):
     """Unpack the simulation result object into figures and tabular data files."""
@@ -215,19 +214,11 @@ def extract_results(
     os.makedirs(out_dir, exist_ok=True)
     print("Extracting results, saving under:", out_dir)
 
-    visual_out_dir = os.path.join(out_dir, "visual")
-    os.mkdir(visual_out_dir)
-
     sc_out_dir = os.path.join(out_dir, "single_cell_data")
     os.mkdir(sc_out_dir)
 
     # --- single-cell layer -------------------------------------------------
     sc_data = res["tissue_data"]
-
-    if not skip_visual:
-        fig, _ax = utils.visualize_tissue(sc_data["genome_per_chr"], sc_data["coordinates"])
-        fig.savefig(os.path.join(visual_out_dir, "tissue.png"))
-        plt.close(fig)
 
     n_cells, _n_genes = sc_data["expression"].shape
     cell_ids = np.asarray(res["cell_ids"], dtype=int)  # e.g. [0, 5, 6, 12, 20, ...]
@@ -272,16 +263,6 @@ def extract_results(
     os.mkdir(st_out_dir)
     st_data = res["st_data"]
     spot_names = pd.Index([f"Spot_{x}" for x in range(st_data["expression"].shape[0])])
-
-    if not skip_visual:
-        fig, _ax = utils.visualize_array(
-            sc_data["genome_per_chr"],
-            sc_data["coordinates"],
-            array_x=st_data["coordinates"][:, 0],
-            array_y=st_data["coordinates"][:, 1],
-        )
-        fig.savefig(os.path.join(visual_out_dir, "tissue_w_array.png"))
-        plt.close(fig)
 
     st_expr = pd.DataFrame(st_data["expression"], columns=gene_names, index=spot_names)
     st_genome_profile = pd.DataFrame(
@@ -459,6 +440,32 @@ def prefilter_cnv_by_gene_mid(
             "the same genome build."
         )
     return kept
+
+
+def _plot_cnv_burden_spatial(res, qc_dir):
+    """Per-cell count of genes at a non-diploid copy number, over space."""
+    sc = res.get("tissue_data", {})
+    if "genome_per_chr" not in sc:
+        return
+    fig, _ax = utils.visualize_tissue(sc["genome_per_chr"], sc["coordinates"])
+    fig.savefig(os.path.join(qc_dir, "cnv_burden_spatial.png"))
+    plt.close(fig)
+
+
+def _plot_cnv_burden_with_spot_array(res, qc_dir):
+    """CNV burden over space, with the spot capture array overlaid."""
+    sc = res.get("tissue_data", {})
+    st = res.get("st_data", {})
+    if "genome_per_chr" not in sc or "coordinates" not in st:
+        return
+    fig, _ax = utils.visualize_array(
+        sc["genome_per_chr"],
+        sc["coordinates"],
+        array_x=st["coordinates"][:, 0],
+        array_y=st["coordinates"][:, 1],
+    )
+    fig.savefig(os.path.join(qc_dir, "cnv_burden_with_spot_array.png"))
+    plt.close(fig)
 
 
 def _plot_sc_celltype_spatial(res, qc_dir):
@@ -786,7 +793,6 @@ def main(argv=None) -> int:
         out_dir_main,
         common_gene_order,
         no_parquet=args.no_parquet,
-        skip_visual=args.skip_visual,
         overwrite=args.overwrite,
     )
     # The expression matrix is generated through a memmap under <output>/tmp.
@@ -802,6 +808,8 @@ def main(argv=None) -> int:
         qc_dir = os.path.join(out_dir_main, "qc")
         os.makedirs(qc_dir, exist_ok=True)
         for label, fn in (
+            ("CNV burden spatial plot", _plot_cnv_burden_spatial),
+            ("CNV burden + spot array plot", _plot_cnv_burden_with_spot_array),
             ("sc celltype spatial plot", _plot_sc_celltype_spatial),
             ("ST celltype proportion plots", _plot_st_celltype_proportions),
         ):

@@ -17,8 +17,7 @@ files the row label becomes a leading column named `index`.
     ├── all_cell_ids.tsv
     ├── cluster_lineage.tsv
     ├── single_cell_data/
-    ├── spatial_data/
-    └── visual/
+    └── spatial_data/
 ```
 
 ## Ground truth: what a benchmark should score against
@@ -157,16 +156,20 @@ the allele-level signal derived from it.
 If you need it, call :func:`st_cnv_simulator.run` directly from Python: it returns the
 full result object in memory and you can serialise whichever parts you want.
 
-## `qc/` and `synthetic/visual/`
+## `qc/`
 
-Diagnostic figures, skipped entirely with `--skip-visual`.
+Every diagnostic figure lands here. All of them are skipped with `--skip-visual`.
 
 | File | Shows |
 |---|---|
-| `qc/sc_celltype_spatial.pdf` | single cells coloured by cell type |
-| `qc/st_celltype_proportions.pdf` | per-spot proportion map, one panel per cell type |
-| `synthetic/visual/tissue.png` | aberrant-gene burden across the tissue |
-| `synthetic/visual/tissue_w_array.png` | the same, with spot centres overlaid |
+| `cnv_burden_spatial.png` | per-cell count of genes at a non-diploid copy number, over space |
+| `cnv_burden_with_spot_array.png` | the same, with the spot capture array overlaid |
+| `sc_celltype_spatial.pdf` | single cells coloured by cell type |
+| `st_celltype_proportions.pdf` | per-spot proportion map, one panel per cell type |
+
+The first two used to be written to `synthetic/visual/` as `tissue.png` and
+`tissue_w_array.png`. They now sit alongside the rest, so there is one figure
+directory rather than two.
 
 `stcnv-batch` writes further per-replicate QC figures covering subclone spatial layout,
 per-spot subclone counts and CNV burden.

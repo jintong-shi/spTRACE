@@ -63,6 +63,31 @@ def test_scratch_memmap_is_cleaned_up(completed_run):
     assert not (completed_run / "tmp").exists()
 
 
+def test_all_figures_live_in_one_place(repo_root, example_reference, tmp_path):
+    """Figures go to qc/ only; the old synthetic/visual/ directory is gone."""
+    out = tmp_path / "figs"
+    cmd = [
+        sys.executable, "-m", "st_cnv_simulator.cli.simulate",
+        "--design", str(repo_root / "configs" / "design_example.toml"),
+        "--output", str(out), "--seed", "42", "--no-parquet",
+    ]
+    proc = subprocess.run(cmd, capture_output=True, text=True, cwd=repo_root)
+    assert proc.returncode == 0, proc.stderr[-2000:]
+
+    assert not (out / "synthetic" / "visual").exists()
+    figures = sorted(p.name for p in out.rglob("*.png")) + sorted(
+        p.name for p in out.rglob("*.pdf")
+    )
+    assert figures == [
+        "cnv_burden_spatial.png",
+        "cnv_burden_with_spot_array.png",
+        "sc_celltype_spatial.pdf",
+        "st_celltype_proportions.pdf",
+    ]
+    assert all(p.parent.name == "qc" for p in out.rglob("*.png"))
+    assert all(p.parent.name == "qc" for p in out.rglob("*.pdf"))
+
+
 def test_pickle_is_not_written(completed_run):
     """res.pkl reached ~10 GB per replicate and is no longer emitted."""
     assert not (completed_run / "res.pkl").exists()
