@@ -12,7 +12,7 @@ import pytest
 pytestmark = pytest.mark.slow
 
 EXPECTED_OUTPUTS = [
-    "event_log.tsv",
+    "synthetic/event_log.tsv",
     "synthetic/genome.tsv",
     "synthetic/lineage.tsv",
     "synthetic/lineage_all.tsv",
@@ -26,10 +26,10 @@ EXPECTED_OUTPUTS = [
     "synthetic/spatial_data/st-meta.tsv",
     "synthetic/spatial_data/st-annotation.tsv",
     "synthetic/spatial_data/cell_by_spot.txt",
-    "baf/AD.mtx",
-    "baf/DP.mtx",
-    "baf/snp_info.csv",
-    "baf/barcodes.tsv",
+    "synthetic/baf/AD.mtx",
+    "synthetic/baf/DP.mtx",
+    "synthetic/baf/snp_info.csv",
+    "synthetic/baf/barcodes.tsv",
 ]
 
 
@@ -61,6 +61,19 @@ def test_all_expected_outputs_exist(completed_run):
 
 def test_scratch_memmap_is_cleaned_up(completed_run):
     assert not (completed_run / "tmp").exists()
+
+
+def test_output_root_holds_only_data_and_figures(completed_run):
+    """Everything simulated goes under synthetic/; every figure under qc/.
+
+    ``completed_run`` passes --skip-visual, so qc/ is absent here; the point is
+    that nothing *else* is left at the top level.
+    """
+    entries = {p.name for p in completed_run.iterdir()}
+    assert entries <= {"qc", "synthetic"}, f"unexpected entries at the output root: {entries}"
+    assert "synthetic" in entries
+    assert (completed_run / "synthetic" / "baf").is_dir()
+    assert (completed_run / "synthetic" / "event_log.tsv").is_file()
 
 
 def test_all_figures_live_in_one_place(repo_root, example_reference, tmp_path):
@@ -179,7 +192,7 @@ def test_genome_table_row_order_matches_expression_columns(completed_run):
 def test_event_log_records_cnv_events(completed_run):
     import pandas as pd
 
-    log = pd.read_csv(completed_run / "event_log.tsv", sep="\t")
+    log = pd.read_csv(completed_run / "synthetic/event_log.tsv", sep="\t")
     assert len(log) > 0
     assert {"iter", "cell_id", "Chromosome", "Major_Copy_Number", "Minor_Copy_Number"} <= set(
         log.columns
@@ -249,4 +262,6 @@ def test_quick_purity_mode(repo_root, example_reference, tmp_path):
     assert 0.0 <= summary["overall_tumor_purity"].iloc[0] <= 1.0
     assert summary["n_tumor_cells"].iloc[0] <= summary["n_cells"].iloc[0]
     # Quick mode must not have produced the expensive layers.
-    assert not (out / "synthetic").exists()
+    assert not (out / "synthetic" / "single_cell_data").exists()
+    assert not (out / "synthetic" / "spatial_data").exists()
+    assert not (out / "synthetic" / "baf").exists()

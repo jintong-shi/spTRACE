@@ -107,7 +107,7 @@ def load_replicate_tables(rep_folder):
 
 def analyze_replicate(rep_folder, min_frac=MAJOR_SUBCLONE_MIN_CELL_FRAC):
     """Count subclones and compute per-cell labels for the QC plots."""
-    event_log_path = os.path.join(rep_folder, "event_log.tsv")
+    event_log_path = os.path.join(rep_folder, "synthetic", "event_log.tsv")
 
     meta_path = os.path.join(
         rep_folder, "synthetic", "single_cell_data", "sc-meta_data.tsv"

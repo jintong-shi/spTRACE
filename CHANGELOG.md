@@ -116,6 +116,20 @@ the internal version. New code is expected to be clean.
   `n_broken_lineage_links` / `subclone_counts_exact` if it ever has to fall back, so
   `n_subclones` can never be silently understated.
 
+### Output layout
+
+- `event_log.tsv` and `baf/` moved under `synthetic/`. The output root now holds just two
+  things: `synthetic/` (every data file) and `qc/` (every figure).
+- Consequence for the Numbat export: the BAF directory is now
+  `<output>/synthetic/baf`, not `<output>/baf`. `stcnv-batch` was updated; if you call
+  `stcnv-export-numbat` by hand, adjust `--baf-dir`.
+- `<output>/synthetic` is now created **before** the simulation starts, because the BAF
+  matrices are written into it mid-run. That also fixes a real wart: the "already exists,
+  pass --overwrite" refusal used to fire in `extract_results`, i.e. *after* a full
+  simulation had run and been discarded. It now fails in about two seconds.
+- `quick_purity_summary.tsv` stays at the output root, since it is a report about the run
+  rather than simulated data.
+
 ### QC available from a single run
 
 - The subclone figures (`subclone_spatial.png`, `cnv_events_spatial.png`,

@@ -315,7 +315,7 @@ def run(
         )
 
         # 6. Save the results in Matrix Market format
-        out_baf_dir = os.path.join(output_dir, "baf")
+        out_baf_dir = os.path.join(output_dir, "synthetic", "baf")
         os.makedirs(out_baf_dir, exist_ok=True)
         print(f"Saving BAF matrices to {out_baf_dir}...")
         scipy.io.mmwrite(os.path.join(out_baf_dir, "AD.mtx"), scipy.sparse.csr_matrix(AD))

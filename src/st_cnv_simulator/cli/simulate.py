@@ -42,6 +42,30 @@ PATH_KEYS = (
 VALID_CHROMS = [f"chr{i}" for i in range(1, 23)] + ["chrX", "chrY"]
 
 
+def synthetic_dir(out_dir_main: str) -> str:
+    """Every simulated data file lives under this one directory."""
+    return os.path.join(out_dir_main, "synthetic")
+
+
+def prepare_synthetic_dir(out_dir_main: str, overwrite: bool) -> str:
+    """Create <output>/synthetic, refusing to clobber an existing one.
+
+    Called before the simulation rather than after it, for two reasons: the BAF
+    matrices are written into this directory while the pipeline runs, and a
+    refusal here should cost nothing rather than discard a completed run.
+    """
+    out_dir = synthetic_dir(out_dir_main)
+    if os.path.exists(out_dir):
+        if not overwrite:
+            raise FileExistsError(
+                f"{out_dir} already exists. Pass --overwrite to replace it, "
+                "or choose a different --output directory."
+            )
+        shutil.rmtree(out_dir)
+    os.makedirs(out_dir, exist_ok=True)
+    return out_dir
+
+
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(
         prog="stcnv-simulate",
@@ -201,22 +225,18 @@ def extract_results(
     common_gene_order,
     *,
     no_parquet: bool = False,
-    overwrite: bool = False,
 ):
-    """Unpack the simulation result object into figures and tabular data files."""
-    out_dir = os.path.join(out_dir_main, "synthetic")
-    if os.path.exists(out_dir):
-        if not overwrite:
-            raise FileExistsError(
-                f"{out_dir} already exists. Pass --overwrite to replace it, "
-                "or choose a different --output directory."
-            )
-        shutil.rmtree(out_dir)
+    """Unpack the simulation result object into tabular data files.
+
+    The directory is prepared by :func:`prepare_synthetic_dir` before the
+    simulation starts, because the BAF matrices are written into it mid-run.
+    """
+    out_dir = synthetic_dir(out_dir_main)
     os.makedirs(out_dir, exist_ok=True)
     print("Extracting results, saving under:", out_dir)
 
     sc_out_dir = os.path.join(out_dir, "single_cell_data")
-    os.mkdir(sc_out_dir)
+    os.makedirs(sc_out_dir, exist_ok=True)
 
     # --- single-cell layer -------------------------------------------------
     sc_data = res["tissue_data"]
@@ -261,7 +281,7 @@ def extract_results(
 
     # --- spatial (spot) layer ---------------------------------------------
     st_out_dir = os.path.join(out_dir, "spatial_data")
-    os.mkdir(st_out_dir)
+    os.makedirs(st_out_dir, exist_ok=True)
     st_data = res["st_data"]
     spot_names = pd.Index([f"Spot_{x}" for x in range(st_data["expression"].shape[0])])
 
@@ -721,6 +741,10 @@ def main(argv=None) -> int:
     ds = load_design(args.design)
     print("Design file loaded:", args.design)
 
+    # Prepared up front: the pipeline writes BAF matrices straight into it, and a
+    # refusal to overwrite must not come after an expensive simulation.
+    prepare_synthetic_dir(out_dir_main, args.overwrite)
+
     # Global random seed. An explicit --seed wins over the design file, and 0 is
     # a valid seed. Without either, the run is not reproducible.
     seed = args.seed if args.seed is not None else ds.get("reproducibility", {}).get("seed")
@@ -767,7 +791,9 @@ def main(argv=None) -> int:
 
     if isinstance(res.get("event_log"), pd.DataFrame):
         res["event_log"].to_csv(
-            os.path.join(out_dir_main, "event_log.tsv"), sep="\t", index=False
+            os.path.join(synthetic_dir(out_dir_main), "event_log.tsv"),
+            sep="\t",
+            index=False,
         )
 
     if args.quick_purity_only:
@@ -794,7 +820,6 @@ def main(argv=None) -> int:
         out_dir_main,
         common_gene_order,
         no_parquet=args.no_parquet,
-        overwrite=args.overwrite,
     )
     # The expression matrix is generated through a memmap under <output>/tmp.
     # By this point every consumer has been written out, so drop the backing file

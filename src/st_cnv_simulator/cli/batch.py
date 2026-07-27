@@ -291,7 +291,7 @@ def main(argv=None) -> int:
 
             # B. Export to Numbat allele-count format
             if args.genetic_map:
-                baf_dir = os.path.join(rep_folder, "baf")
+                baf_dir = os.path.join(rep_folder, "synthetic", "baf")
 
                 # Numbat needs a header on the barcode list.
                 meta_path = create_metadata_with_header(baf_dir)

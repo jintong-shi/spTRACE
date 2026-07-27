@@ -6,25 +6,29 @@ files the row label becomes a leading column named `index`.
 
 ```
 <output>/
-├── event_log.tsv
 ├── quick_purity_summary.tsv        (--quick-purity-only only)
-├── baf/
-├── qc/
-└── synthetic/
+├── qc/                             every figure
+└── synthetic/                      every data file
+    ├── event_log.tsv
     ├── genome.tsv
     ├── lineage.tsv
     ├── lineage_all.tsv
     ├── all_cell_ids.tsv
     ├── cluster_lineage.tsv
     ├── single_cell_data/
-    └── spatial_data/
+    ├── spatial_data/
+    └── baf/
 ```
+
+`synthetic/` is created before the simulation starts, because the BAF matrices are
+written into it while the pipeline runs. Re-running into an existing output directory
+fails immediately unless `--overwrite` is passed, rather than after the simulation.
 
 ## Ground truth: what a benchmark should score against
 
 | Question | File |
 |---|---|
-| Which segments are altered, in which cell, to what allelic state? | `event_log.tsv` |
+| Which segments are altered, in which cell, to what allelic state? | `synthetic/event_log.tsv` |
 | What is each cell's copy number, per gene? | `single_cell_data/sc-genome_profile` |
 | What is each spot's average copy number, per gene? | `spatial_data/st-genome_profile` |
 | Which cells belong to which clone? | `single_cell_data/sc-meta_data` (`clone_id`) |
@@ -33,7 +37,7 @@ files the row label becomes a leading column named `index`.
 | Which cells landed in which spot? | `spatial_data/cell_by_spot.txt` |
 | Where does each gene sit on the genome? | `genome.tsv` |
 
-## `event_log.tsv`
+## `synthetic/event_log.tsv`
 
 One row per CNV event applied during the run — the primary ground truth.
 
@@ -115,7 +119,7 @@ understates the count — on a 28k-cell replicate that turned 3 evolved subclone
 `stcnv-batch` prefers `lineage_all.tsv` and reports `n_broken_lineage_links` if it ever
 has to fall back.
 
-## `baf/`
+## `synthetic/baf/`
 
 Allele counts for BAF-based methods. Rows are **spots**, columns are **SNPs**.
 
@@ -134,8 +138,8 @@ means the gene had no reads in that spot.
 Convert to Numbat's long format with:
 
 ```bash
-stcnv-export-numbat --baf-dir <output>/baf \
-  --snp-file <output>/baf/snp_info.csv \
+stcnv-export-numbat --baf-dir <output>/synthetic/baf \
+  --snp-file <output>/synthetic/baf/snp_info.csv \
   --meta-file <metadata with a cell_id column> \
   --genetic-map genetic_map_hg38_withX.txt.gz \
   --output <output>/numbat_allele_counts.tsv.gz
