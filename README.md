@@ -1,4 +1,6 @@
-# spTRACE: simulated spatial Tumours with Realistic Accumulated Copy-number Events
+# spTRACE
+
+simulated **sp**atial **T**umours with **R**ealistic **A**ccumulated **C**opy-number **E**vents
 
 A multimodal simulator that grows tumors dynamically as a spatial process and pairs DNA and RNA in every cell, providing a reliable synthetic copy-number and subclone ground truth.
 
@@ -23,7 +25,7 @@ clone assignments, and allelic imbalance.
 
 ```bash
 git clone https://github.com/jintong-shi/spTRACE.git
-cdspTRACE
+cd spTRACE/
 pip install -e .
 ```
 
@@ -35,6 +37,7 @@ conda activate stcnv-sim
 ```
 
 Python 3.10 or newer. No GPU required.
+Time estimate: ~1min
 
 ## Quickstart
 
