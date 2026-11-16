@@ -50,8 +50,8 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/jintongshi/st-cnv-simulator"
-Issues = "https://github.com/jintongshi/st-cnv-simulator/issues"
+Homepage = "https://github.com/jintong-shi/spTRACE"
+Issues = "https://github.com/jintong-shi/spTRACE/issues"
 
 [project.scripts]
 sptrace-simulate = "sptrace.cli.simulate:main"

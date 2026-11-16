@@ -23,8 +23,8 @@ clone assignments, and allelic imbalance.
 ## Install
 
 ```bash
-git clone https://github.com/jintongshi/st-cnv-simulator.git
-cd st-cnv-simulator
+git clone https://github.com/jintong-shi/spTRACE.git
+cdspTRACE
 pip install -e .
 ```
 

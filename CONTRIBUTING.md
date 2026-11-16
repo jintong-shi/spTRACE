@@ -5,8 +5,8 @@ Thanks for your interest. Issues and pull requests are welcome.
 ## Setup
 
 ```bash
-git clone https://github.com/jintongshi/st-cnv-simulator.git
-cd st-cnv-simulator
+git clone https://github.com/jintong-shi/spTRACE.git
+cdspTRACE
 pip install -e ".[dev,parquet]"
 sptrace-make-example-reference     # needed by the end-to-end tests
 ```
