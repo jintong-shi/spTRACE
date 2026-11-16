@@ -1,7 +1,7 @@
 """Quality-control analysis and figures for a completed simulation.
 
 Everything here works from a run's output tables, so it applies equally to a single
-``stcnv-simulate`` run and to each replicate of ``stcnv-batch``.
+``sptrace-simulate`` run and to each replicate of ``sptrace-batch``.
 
 :func:`analyze_replicate` derives the subclone structure (founder clones, evolved
 subclones and their per-cell membership) and :func:`generate_qc_plots` renders it.

@@ -1,4 +1,4 @@
-"""st-cnv-simulator: agent-based simulation of spatial transcriptomics data with CNVs.
+"""spTRACE: agent-based simulation of spatial transcriptomics data with CNVs.
 
 The simulator grows a tumour cell population on a 2-D lattice, mutates each
 cell's diploid genome by drawing allele-specific copy-number events from a
@@ -8,10 +8,10 @@ allele (AD/DP) count matrices.
 
 Typical use is through the command line:
 
-    stcnv-simulate --design configs/design.toml --output out/
-    stcnv-batch    --design configs/design.toml
+    sptrace-simulate --design configs/design.toml --output out/
+    sptrace-batch    --design configs/design.toml
 
-The Python API entry point is :func:`st_cnv_simulator.run`.
+The Python API entry point is :func:`sptrace.run`.
 """
 
 from __future__ import annotations

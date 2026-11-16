@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run a single spatial-transcriptomics CNV simulation from a design file.
 
-Console entry point: ``stcnv-simulate``.
+Console entry point: ``sptrace-simulate``.
 """
 
 from __future__ import annotations
@@ -68,7 +68,7 @@ def prepare_synthetic_dir(out_dir_main: str, overwrite: bool) -> str:
 
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(
-        prog="stcnv-simulate",
+        prog="sptrace-simulate",
         description="Simulate spatial transcriptomics data with allele-specific CNVs.",
     )
     parser.add_argument("--design", required=True, help="Path to the design TOML file")
@@ -139,7 +139,7 @@ def resolve_paths(design: dict, design_file: Path) -> dict:
             "Reference input(s) named in the design file do not exist:\n"
             + "\n".join(missing)
             + "\n\nSee data/reference/README.md for how to obtain them, or run "
-            "`stcnv-make-example-reference` to generate a small runnable example set."
+            "`sptrace-make-example-reference` to generate a small runnable example set."
         )
     return design
 
@@ -846,7 +846,7 @@ def main(argv=None) -> int:
 
         # Subclone QC: founder clones, evolved subclones, per-cell membership and the
         # spot-level views. This reads the tables just written, so it is the same
-        # analysis stcnv-batch runs per replicate.
+        # analysis sptrace-batch runs per replicate.
         try:
             qc_res, stats = analyze_replicate(out_dir_main)
             if "error" in stats:

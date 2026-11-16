@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: "st-cnv-simulator: agent-based simulation of spatial transcriptomics data with allele-specific copy-number variation"
+title: "spTRACE: agent-based simulation of spatial transcriptomics data with allele-specific copy-number variation"
 message: "If you use this software, please cite it as below."
 type: software
 authors:

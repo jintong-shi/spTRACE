@@ -1,4 +1,4 @@
-# st_cnv_simulator/cnv_utils.py
+# sptrace/cnv_utils.py
 from __future__ import annotations
 import numpy as np
 import pandas as pd

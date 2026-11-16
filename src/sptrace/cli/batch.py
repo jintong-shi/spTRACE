@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run a batch of simulations, sampling parameters from the [batch_ranges] table.
 
-Console entry point: ``stcnv-batch``.
+Console entry point: ``sptrace-batch``.
 
 Each replicate gets its own design file (written to the replicate folder as
 ``config.toml``), is simulated in a subprocess, exported to Numbat allele-count
@@ -29,8 +29,8 @@ from .. import _toml as toml  # noqa: E402
 
 # Replicates run as subprocesses so that each simulation's peak memory is
 # released before the next one starts.
-SIMULATE_MODULE = "st_cnv_simulator.cli.simulate"
-EXPORT_MODULE = "st_cnv_simulator.cli.export_numbat"
+SIMULATE_MODULE = "sptrace.cli.simulate"
+EXPORT_MODULE = "sptrace.cli.export_numbat"
 
 PATH_ALIASES = {
     # population
@@ -136,7 +136,7 @@ def create_metadata_with_header(baf_dir):
 
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(
-        prog="stcnv-batch",
+        prog="sptrace-batch",
         description="Run a batch of simulations with parameters sampled from [batch_ranges].",
     )
     parser.add_argument("--design", required=True, help="Path to the base design TOML file")
@@ -314,7 +314,7 @@ def main(argv=None) -> int:
                     print("   [Warning] barcodes.tsv not found, skipping Numbat export.")
 
             # QC figures, including the subclone panels, are written by
-            # stcnv-simulate itself -- see st_cnv_simulator.qc.
+            # sptrace-simulate itself -- see sptrace.qc.
 
         except subprocess.CalledProcessError as e:
             print(f"Error in Run {i}: {e}")

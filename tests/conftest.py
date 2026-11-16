@@ -22,6 +22,6 @@ def example_reference(reference_dir) -> Path:
     needed = ["counts.tsv", "cnv_catalog.csv", "gene_order.csv", "celltype.tsv"]
     if not all((example / f).exists() for f in needed):
         pytest.skip(
-            "Example reference not generated. Run `stcnv-make-example-reference` first."
+            "Example reference not generated. Run `sptrace-make-example-reference` first."
         )
     return example

@@ -2,7 +2,7 @@
 
 import pytest
 
-from st_cnv_simulator import _toml as toml
+from sptrace import _toml as toml
 
 
 def test_loads_shipped_design(repo_root):
@@ -48,6 +48,6 @@ def test_module_does_not_shadow_pypi_toml():
     """Regression guard: the shim used to live at top level as `toml.py`."""
     import importlib.util
 
-    spec = importlib.util.find_spec("st_cnv_simulator._toml")
+    spec = importlib.util.find_spec("sptrace._toml")
     assert spec is not None
-    assert spec.name == "st_cnv_simulator._toml"
+    assert spec.name == "sptrace._toml"

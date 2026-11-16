@@ -22,16 +22,16 @@ Import blocks also changed: `hashlib` added to `model.py`, a missing `utils` imp
 
 ### Packaging
 
-- Installable package under `src/st_cnv_simulator/` with a `pyproject.toml`; console
-  entry points `stcnv-simulate`, `stcnv-batch`, `stcnv-export-numbat`, `stcnv-prep-snps`
-  and `stcnv-make-example-reference`.
+- Installable package under `src/sptrace/` with a `pyproject.toml`; console
+  entry points `sptrace-simulate`, `sptrace-batch`, `sptrace-export-numbat`, `sptrace-prep-snps`
+  and `sptrace-make-example-reference`.
 - **Removed the top-level `toml.py`**, which shadowed the PyPI `toml` package for anything
-  run from the repository root. TOML handling now lives in `st_cnv_simulator._toml` and
+  run from the repository root. TOML handling now lives in `sptrace._toml` and
   reads via `tomllib` (3.11+) or `tomli` (3.10).
 - Scripts became modules: `run.py` → `cli/simulate.py`, `batch_runner.py` → `cli/batch.py`,
   `export_numbat.py` and `prep_snps.py` → `cli/`, `main.py` → `pipeline.py`.
   `formating.py` was renamed to `formatting.py`.
-- `batch.py` now invokes replicates as `python -m st_cnv_simulator.cli.simulate` instead of
+- `batch.py` now invokes replicates as `python -m sptrace.cli.simulate` instead of
   a bare `run.py` in the working directory, so batches work from any directory.
 - Dropped an unused `from calicost import ...` import, removing a phantom dependency on
   CalicoST.
@@ -102,27 +102,27 @@ the internal version. New code is expected to be clean.
 - **Removed all 13 hardcoded absolute paths.** `[files]` entries may be absolute or
   relative to the design file, with `$VAR` and `~` expansion.
 - The Eagle genetic map path is now the required `--genetic-map` argument to
-  `stcnv-export-numbat` rather than a module-level constant.
+  `sptrace-export-numbat` rather than a module-level constant.
 - `prep_snps.py`'s three hardcoded paths became `--snp-ids`, `--gene-table` and `--output`;
   it now accepts a text/CSV SNP list as well as `.npy`.
 - The site-specific SLURM script was replaced with a generic template in `examples/`.
 - Missing reference files are reported up front, all at once, with a pointer to
-  `stcnv-make-example-reference`.
+  `sptrace-make-example-reference`.
 
 ### Outputs no longer written
 
 - **`res.pkl` is gone.** It reached ~10 GB per replicate (measured on a 28k-cell run), which
   dominated the on-disk size of a batch, and pickles are version-fragile besides. Everything
-  downstream code read from it is available in the TSV/Parquet tables. `stcnv-batch`'s QC
+  downstream code read from it is available in the TSV/Parquet tables. `sptrace-batch`'s QC
   step was rewired to load those tables via a new `load_replicate_tables()` instead of
-  unpickling. `st_cnv_simulator.run()` still returns the full result object in memory, so a
+  unpickling. `sptrace.run()` still returns the full result object in memory, so a
   Python caller can serialise whatever it needs.
 
   `synthetic/lineage_all.tsv` is still written. It is only ~1 MB, and dropping it turned out
   to cost correctness: `lineage.tsv` covers surviving tumour cells only, so an ancestry walk
   over it breaks at the first cell that died. Measured across eight replicates, that
   understated the evolved-subclone count in six of them (3 major founders became 1 in one
-  case). `stcnv-batch` now prefers `lineage_all.tsv` and reports
+  case). `sptrace-batch` now prefers `lineage_all.tsv` and reports
   `n_broken_lineage_links` / `subclone_counts_exact` if it ever has to fall back, so
   `n_subclones` can never be silently understated.
 
@@ -131,8 +131,8 @@ the internal version. New code is expected to be clean.
 - `event_log.tsv` and `baf/` moved under `synthetic/`. The output root now holds just two
   things: `synthetic/` (every data file) and `qc/` (every figure).
 - Consequence for the Numbat export: the BAF directory is now
-  `<output>/synthetic/baf`, not `<output>/baf`. `stcnv-batch` was updated; if you call
-  `stcnv-export-numbat` by hand, adjust `--baf-dir`.
+  `<output>/synthetic/baf`, not `<output>/baf`. `sptrace-batch` was updated; if you call
+  `sptrace-export-numbat` by hand, adjust `--baf-dir`.
 - `<output>/synthetic` is now created **before** the simulation starts, because the BAF
   matrices are written into it mid-run. That also fixes a real wart: the "already exists,
   pass --overwrite" refusal used to fire in `extract_results`, i.e. *after* a full
@@ -146,14 +146,14 @@ the internal version. New code is expected to be clean.
   `st_subclone_count_spatial.png`, `st_major_subclone_spatial.png`,
   `celltype_proportions.png`, `sc_celltype_spatial.png`) used to be produced **only** by the
   batch runner, so a plain single simulation never got them. The QC analysis and plotting
-  moved out of `cli/batch.py` into a new library module `st_cnv_simulator.qc`, and
-  `stcnv-simulate` now runs it too. A single run and a batch replicate produce the same ten
+  moved out of `cli/batch.py` into a new library module `sptrace.qc`, and
+  `sptrace-simulate` now runs it too. A single run and a batch replicate produce the same ten
   figures, and the run prints a one-line subclone summary.
 
-  `st_cnv_simulator.qc.analyze_replicate()` and `generate_qc_plots()` are importable, so QC
+  `sptrace.qc.analyze_replicate()` and `generate_qc_plots()` are importable, so QC
   can also be re-run over an existing output directory without re-simulating.
 
-  Two consequences. `stcnv-batch` no longer runs the QC itself (it would have run twice per
+  Two consequences. `sptrace-batch` no longer runs the QC itself (it would have run twice per
   replicate); figure titles now carry the replicate folder name rather than `Rep_<i>`. And
   `--skip-visual` now suppresses the subclone figures too, where before the batch runner
   drew them regardless.
@@ -171,7 +171,7 @@ the internal version. New code is expected to be clean.
 - `STCNV_NO_PARQUET` and `STCNV_SKIP_VISUAL` environment variables were replaced by
   `--no-parquet` and `--skip-visual`.
 - `extract_results` used to `rmtree` an existing `<output>/synthetic` without asking. It now
-  fails unless `--overwrite` is passed. `stcnv-batch` passes it automatically.
+  fails unless `--overwrite` is passed. `sptrace-batch` passes it automatically.
 - `[files].genome_file` was removed from the shipped config: nothing read it.
 - `[files].tcga_all_seg` is now `cnv_catalog_file`; the old name still works.
 

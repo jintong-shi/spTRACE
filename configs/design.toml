@@ -1,4 +1,4 @@
-# Reference design file for st-cnv-simulator.
+# Reference design file for spTRACE.
 #
 # Paths under [files] may be absolute, or relative to THIS file's directory.
 # Environment variables ($VAR) and ~ are expanded.
@@ -15,7 +15,7 @@ gene_table_file = "../data/reference/gene_order.csv"
 refexp_file = "../data/reference/counts.tsv"
 # Cell-type labels: TSV, cell barcodes as rownames, one cell-type column
 refcelltype_file = "../data/reference/celltype.tsv"
-# SNP-to-gene map: columns snp_id,gene_id,chrom,pos (build with stcnv-prep-snps)
+# SNP-to-gene map: columns snp_id,gene_id,chrom,pos (build with sptrace-prep-snps)
 snp_file = "../data/reference/mapped_snps.csv"
 # Allele-specific CNV catalogue that events are drawn from: columns
 # Chromosome,Start,End,Copy_Number,Major_Copy_Number,Minor_Copy_Number.
@@ -167,7 +167,7 @@ Hepatocyte = "Epithelial"
 
 
 # ==========================================
-# Batch execution (read by stcnv-batch only)
+# Batch execution (read by sptrace-batch only)
 # ==========================================
 [batch]
 replicates = 20

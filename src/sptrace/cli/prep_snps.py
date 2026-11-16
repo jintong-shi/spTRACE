@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Map a list of SNP IDs onto genes, producing the simulator's snp_file input.
 
-Console entry point: ``stcnv-prep-snps``.
+Console entry point: ``sptrace-prep-snps``.
 
 Input SNP IDs are expected in ``<chrom>_<pos>_<ref>_<alt>`` form, e.g.
 ``1_12345_A_C``. Only the chromosome and position drive the mapping; the full ID
@@ -65,7 +65,7 @@ def map_snps_to_genes(df_snp: pd.DataFrame, df_genes: pd.DataFrame) -> pd.DataFr
 
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(
-        prog="stcnv-prep-snps",
+        prog="sptrace-prep-snps",
         description="Map SNP IDs onto genes to build the simulator's snp_file input.",
     )
     parser.add_argument(

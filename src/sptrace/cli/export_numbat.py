@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Convert simulated AD/DP matrices into Numbat's allele-count table.
 
-Console entry point: ``stcnv-export-numbat``.
+Console entry point: ``sptrace-export-numbat``.
 
 Numbat expects a long-format, gzip-compressed TSV with one row per
 (cell, SNP) pair carrying non-zero depth, ordered by genomic coordinate. The
@@ -190,7 +190,7 @@ def dump_numbat_sparse(ad_path, dp_path, snp_path, meta_path, output_path, genet
 
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(
-        prog="stcnv-export-numbat",
+        prog="sptrace-export-numbat",
         description="Convert simulated AD/DP matrices to a Numbat allele-count table.",
     )
     parser.add_argument(

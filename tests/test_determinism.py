@@ -11,7 +11,7 @@ import os
 import subprocess
 import sys
 
-from st_cnv_simulator.model import deterministic_hap_flip
+from sptrace.model import deterministic_hap_flip
 
 # Representative events: (chrom, start, end, major_cn, minor_cn)
 EVENTS = [
@@ -31,7 +31,7 @@ def test_hap_flip_is_stable_within_a_process():
 def test_hap_flip_is_stable_across_hash_seeds():
     """The decisive test: vary PYTHONHASHSEED and require identical results."""
     script = (
-        "from st_cnv_simulator.model import deterministic_hap_flip as f;"
+        "from sptrace.model import deterministic_hap_flip as f;"
         "print([f(*e) for e in ["
         "('chr1',1000000,5000000,2,0),"
         "('chr7',55000000,61000000,3,1),"

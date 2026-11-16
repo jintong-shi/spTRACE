@@ -8,9 +8,9 @@
 #
 # The job is single-node and CPU-only; no GPU is required.
 
-#SBATCH --job-name=stcnv-batch
-#SBATCH --output=logs/stcnv-batch-%j.out
-#SBATCH --error=logs/stcnv-batch-%j.err
+#SBATCH --job-name=sptrace-batch
+#SBATCH --output=logs/sptrace-batch-%j.out
+#SBATCH --error=logs/sptrace-batch-%j.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
@@ -47,7 +47,7 @@ echo "Job ID   : ${SLURM_JOB_ID:-<interactive>}"
 echo "Node     : ${SLURMD_NODENAME:-$(hostname)}"
 echo "Date     : $(date -Is)"
 echo "Python   : $(command -v python)"
-echo "Version  : $(python -c 'import st_cnv_simulator as s; print(s.__version__)')"
+echo "Version  : $(python -c 'import sptrace as s; print(s.__version__)')"
 echo "Design   : $DESIGN"
 echo "Output   : $OUTPUT"
 
@@ -62,6 +62,6 @@ fi
 
 # Replicates are memory-hungry; they run sequentially, each in its own process.
 # --jobs 1 keeps expression generation reproducible (and is not slower).
-stcnv-batch "${args[@]}" --jobs 1 2>&1 | tee "$OUTPUT/batch_log.txt"
+sptrace-batch "${args[@]}" --jobs 1 2>&1 | tee "$OUTPUT/batch_log.txt"
 
 echo "Finished at: $(date -Is)"

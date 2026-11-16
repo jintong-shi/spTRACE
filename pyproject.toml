@@ -3,7 +3,7 @@ requires = ["setuptools>=64", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "st-cnv-simulator"
+name = "spTRACE"
 version = "0.1.0"
 description = "Agent-based simulator of spatial transcriptomics data with allele-specific copy-number variation"
 readme = "README.md"
@@ -54,11 +54,11 @@ Homepage = "https://github.com/jintongshi/st-cnv-simulator"
 Issues = "https://github.com/jintongshi/st-cnv-simulator/issues"
 
 [project.scripts]
-stcnv-simulate = "st_cnv_simulator.cli.simulate:main"
-stcnv-batch = "st_cnv_simulator.cli.batch:main"
-stcnv-export-numbat = "st_cnv_simulator.cli.export_numbat:main"
-stcnv-prep-snps = "st_cnv_simulator.cli.prep_snps:main"
-stcnv-make-example-reference = "st_cnv_simulator.cli.make_example_reference:main"
+sptrace-simulate = "sptrace.cli.simulate:main"
+sptrace-batch = "sptrace.cli.batch:main"
+sptrace-export-numbat = "sptrace.cli.export_numbat:main"
+sptrace-prep-snps = "sptrace.cli.prep_snps:main"
+sptrace-make-example-reference = "sptrace.cli.make_example_reference:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -89,12 +89,12 @@ ignore = [
 # Do not add files to this list; new code is expected to be clean.
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["E402"]
-"src/st_cnv_simulator/model.py" = ["UP", "F401", "F841", "E701", "E702", "E401", "I001", "B007", "W293"]
-"src/st_cnv_simulator/formatting.py" = ["UP", "F401", "E701", "E702", "E401", "I001", "W293"]
-"src/st_cnv_simulator/utils.py" = ["UP", "F401", "F811", "F841", "E701", "E702", "E401", "I001", "W293"]
-"src/st_cnv_simulator/pipeline.py" = ["UP", "F401", "I001", "W293"]
-"src/st_cnv_simulator/cnv_utils.py" = ["UP", "F401", "E701", "E702", "I001", "W293"]
-"src/st_cnv_simulator/cnv_logging.py" = ["UP", "I001", "W293"]
-"src/st_cnv_simulator/cli/batch.py" = ["UP", "E701", "E702", "I001", "W293"]
+"src/sptrace/model.py" = ["UP", "F401", "F841", "E701", "E702", "E401", "I001", "B007", "W293"]
+"src/sptrace/formatting.py" = ["UP", "F401", "E701", "E702", "E401", "I001", "W293"]
+"src/sptrace/utils.py" = ["UP", "F401", "F811", "F841", "E701", "E702", "E401", "I001", "W293"]
+"src/sptrace/pipeline.py" = ["UP", "F401", "I001", "W293"]
+"src/sptrace/cnv_utils.py" = ["UP", "F401", "E701", "E702", "I001", "W293"]
+"src/sptrace/cnv_logging.py" = ["UP", "I001", "W293"]
+"src/sptrace/cli/batch.py" = ["UP", "E701", "E702", "I001", "W293"]
 # qc.py is the QC analysis and plotting code lifted verbatim out of batch.py.
-"src/st_cnv_simulator/qc.py" = ["UP", "E701", "E702", "I001", "W293", "B007"]
+"src/sptrace/qc.py" = ["UP", "E701", "E702", "I001", "W293", "B007"]

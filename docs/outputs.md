@@ -1,6 +1,6 @@
 # Output reference
 
-Layout of `<output>/` after `stcnv-simulate`. Tables are written as Parquet by default and
+Layout of `<output>/` after `sptrace-simulate`. Tables are written as Parquet by default and
 as TSV with `--no-parquet`; the schemas below are identical either way. In the Parquet
 files the row label becomes a leading column named `index`.
 
@@ -116,7 +116,7 @@ because dead cells leave no data.
 Use `lineage_all.tsv` for anything that walks ancestry. `lineage.tsv` omits cells that
 died, so a founder-to-descendants walk over it breaks at the first dead intermediate and
 understates the count — on a 28k-cell replicate that turned 3 evolved subclones into 1.
-`stcnv-batch` prefers `lineage_all.tsv` and reports `n_broken_lineage_links` if it ever
+`sptrace-batch` prefers `lineage_all.tsv` and reports `n_broken_lineage_links` if it ever
 has to fall back.
 
 ## `synthetic/baf/`
@@ -138,7 +138,7 @@ means the gene had no reads in that spot.
 Convert to Numbat's long format with:
 
 ```bash
-stcnv-export-numbat --baf-dir <output>/synthetic/baf \
+sptrace-export-numbat --baf-dir <output>/synthetic/baf \
   --snp-file <output>/synthetic/baf/snp_info.csv \
   --meta-file <metadata with a cell_id column> \
   --genetic-map genetic_map_hg38_withX.txt.gz \
@@ -157,7 +157,7 @@ needs is in the tables above. The one field it held that has no tabular equivale
 `genome_per_chr` (per-cell, per-haplotype gene counts); the AD/DP matrices in `baf/` carry
 the allele-level signal derived from it.
 
-If you need it, call :func:`st_cnv_simulator.run` directly from Python: it returns the
+If you need it, call :func:`sptrace.run` directly from Python: it returns the
 full result object in memory and you can serialise whichever parts you want.
 
 ## `qc/`
@@ -177,15 +177,15 @@ Every diagnostic figure lands here. All of them are skipped with `--skip-visual`
 | `st_subclone_count_spatial.png` | how many distinct subclones each spot contains |
 | `st_major_subclone_spatial.png` | the dominant subclone in each spot |
 
-`stcnv-simulate` and each replicate of `stcnv-batch` produce the same set. The subclone
-panels come from :func:`st_cnv_simulator.qc.analyze_replicate`, which reconstructs the
+`sptrace-simulate` and each replicate of `sptrace-batch` produce the same set. The subclone
+panels come from :func:`sptrace.qc.analyze_replicate`, which reconstructs the
 clone tree from `lineage_all.tsv` and `event_log.tsv`; the run also prints a one-line
 summary (`Subclone QC: N subclones ... tumour purity ...`).
 
 The first two figures used to live in `synthetic/visual/` as `tissue.png` and
 `tissue_w_array.png`.
 
-`stcnv-batch` writes further per-replicate QC figures covering subclone spatial layout,
+`sptrace-batch` writes further per-replicate QC figures covering subclone spatial layout,
 per-spot subclone counts and CNV burden.
 
 ## Scratch files
