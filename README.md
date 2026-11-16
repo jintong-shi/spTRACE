@@ -1,4 +1,4 @@
-# spTRACE
+# spTRACE: simulated spatial Tumours with Realistic Accumulated Copy-number Events
 
 A multimodal simulator that grows tumors dynamically as a spatial process and pairs DNA and RNA in every cell, providing a reliable synthetic copy-number and subclone ground truth.
 
