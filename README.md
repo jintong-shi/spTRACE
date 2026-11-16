@@ -1,9 +1,8 @@
 # spTRACE
 
-Agent-based simulator of spatial transcriptomics data with allele-specific copy-number
-variation, for benchmarking spatial CNV inference methods.
+A multimodal simulator that grows tumors dynamically as a spatial process and pairs DNA and RNA in every cell, providing a reliable synthetic copy-number and subclone ground truth.
 
-The simulator grows a tumour cell population on a 2-D lattice; each division can draw a
+spTRACE grows a tumour cell population on a 2-D lattice; each division can draw a
 new allele-specific CNV event from a real copy-number catalogue, so subclones accumulate
 a genuine phylogeny. Normal (TME) cells are infused *during* growth rather than pasted in
 afterwards, and are placed by cell-type-specific spatial weight maps, which yields a
