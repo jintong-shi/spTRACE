@@ -233,7 +233,7 @@ the guarantees and the two caveats.
 
 ## `[batch]` and `[batch_ranges]`
 
-Read only by `stcnv-batch`; ignored by `stcnv-simulate`.
+Read only by `sptrace-batch`; ignored by `sptrace-simulate`.
 
 `[batch]`:
 

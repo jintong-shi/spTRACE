@@ -1,8 +1,8 @@
-# Conda environment for st-cnv-simulator.
+# Conda environment for spTRACE.
 #
 #   conda env create -f environment.yml     # run from the repository root
 #   conda activate stcnv-sim
-#   stcnv-simulate --design configs/design_example.toml --output out
+#   sptrace-simulate --design configs/design_example.toml --output out
 #
 # Python is pinned to 3.11 so tomllib is in the standard library; the tomli
 # backport listed in pyproject.toml is only needed on 3.10.
@@ -26,5 +26,5 @@ dependencies:
   - pyarrow>=10
   - pip
   - pip:
-      # Installs the stcnv-* commands. Editable, so a git pull needs no reinstall.
+      # Installs the sptrace-* commands. Editable, so a git pull needs no reinstall.
       - -e .

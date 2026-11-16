@@ -1,4 +1,4 @@
-# st-cnv-simulator
+# spTRACE
 
 Agent-based simulator of spatial transcriptomics data with allele-specific copy-number
 variation, for benchmarking spatial CNV inference methods.
@@ -23,8 +23,8 @@ clone assignments, and allelic imbalance.
 ## Install
 
 ```bash
-git clone https://github.com/jintongshi/st-cnv-simulator.git
-cd st-cnv-simulator
+git clone https://github.com/jintong-shi/spTRACE.git
+cdspTRACE
 pip install -e .
 ```
 
@@ -43,8 +43,8 @@ Two of the reference inputs cannot be redistributed (see
 [data/reference/README.md](data/reference/README.md)), so generate a small stand-in first:
 
 ```bash
-stcnv-make-example-reference
-stcnv-simulate --design configs/design_example.toml --output out/example
+sptrace-make-example-reference
+sptrace-simulate --design configs/design_example.toml --output out/example
 ```
 
 That completes in well under a minute and produces ~2,500 cells over 100 spots. Inspect
@@ -58,17 +58,17 @@ for a full-size run.
 
 | Command | Purpose |
 |---|---|
-| `stcnv-simulate` | one simulation from one design file |
-| `stcnv-batch` | many replicates, sampling parameters from `[batch_ranges]` |
-| `stcnv-export-numbat` | AD/DP matrices → Numbat allele-count TSV |
-| `stcnv-prep-snps` | map a SNP list onto genes to build `snp_file` |
-| `stcnv-make-example-reference` | build the small runnable example reference set |
+| `sptrace-simulate` | one simulation from one design file |
+| `sptrace-batch` | many replicates, sampling parameters from `[batch_ranges]` |
+| `sptrace-export-numbat` | AD/DP matrices → Numbat allele-count TSV |
+| `sptrace-prep-snps` | map a SNP list onto genes to build `snp_file` |
+| `sptrace-make-example-reference` | build the small runnable example reference set |
 
 Every command takes `--help`. The Python API is a single entry point:
 
 ```python
-import st_cnv_simulator
-res = st_cnv_simulator.run(...)   # see src/st_cnv_simulator/pipeline.py for the signature
+import sptrace
+res = sptrace.run(...)   # see src/sptrace/pipeline.py for the signature
 ```
 
 ## Reproducibility
@@ -77,8 +77,8 @@ A seed fixes the entire run. Same seed, same machine, same versions → **byte-i
 output files**, which the test suite asserts across every table the simulator writes.
 
 ```bash
-stcnv-simulate --design configs/design_example.toml --output out/a --seed 42
-stcnv-simulate --design configs/design_example.toml --output out/b --seed 42
+sptrace-simulate --design configs/design_example.toml --output out/a --seed 42
+sptrace-simulate --design configs/design_example.toml --output out/b --seed 42
 # out/a and out/b agree file for file
 ```
 
@@ -86,7 +86,7 @@ Set the seed in the design file (`[reproducibility].seed`) or with `--seed`, whi
 `0` is a valid seed. With no seed at all the simulator prints a warning and the run is not
 reproducible.
 
-For batches, `[batch].seed` (or `stcnv-batch --seed`) seeds the parameter sampler, and each
+For batches, `[batch].seed` (or `sptrace-batch --seed`) seeds the parameter sampler, and each
 replicate's own simulation seed is derived from it — so one number reproduces a whole batch.
 
 Two caveats worth knowing:
@@ -98,7 +98,7 @@ Two caveats worth knowing:
 - The simulator seeds numpy's global RNG rather than threading an explicit `Generator`
   through each call site. This is enough for run-to-run reproducibility, but it means you
   cannot run two independently-seeded simulations concurrently in one process. Use separate
-  processes (which is what `stcnv-batch` does).
+  processes (which is what `sptrace-batch` does).
 
 ## Configuration
 
@@ -135,7 +135,7 @@ Column-by-column definitions are in [docs/outputs.md](docs/outputs.md).
 ## Batch runs
 
 ```bash
-stcnv-batch --design configs/design.toml --genetic-map /path/to/genetic_map_hg38_withX.txt.gz
+sptrace-batch --design configs/design.toml --genetic-map /path/to/genetic_map_hg38_withX.txt.gz
 ```
 
 Each replicate draws its parameters from `[batch_ranges]`, runs in its own subprocess, and

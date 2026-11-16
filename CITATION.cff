@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: "st-cnv-simulator: agent-based simulation of spatial transcriptomics data with allele-specific copy-number variation"
+title: "spTRACE: agent-based simulation of spatial transcriptomics data with allele-specific copy-number variation"
 message: "If you use this software, please cite it as below."
 type: software
 authors:
@@ -9,7 +9,7 @@ authors:
     affiliation: "KTH Royal Institute of Technology"
 version: 0.1.0
 license: MIT
-repository-code: "https://github.com/jintongshi/st-cnv-simulator"
+repository-code: "https://github.com/jintong-shi/spTRACE"
 abstract: >-
   An agent-based simulator that grows a tumour cell population on a 2-D lattice,
   mutating each cell's diploid genome with allele-specific copy-number events drawn

@@ -39,7 +39,7 @@ jobs:
         run: pip install -e ".[dev,parquet]"
 
       - name: Build the example reference set
-        run: stcnv-make-example-reference
+        run: sptrace-make-example-reference
 
       - name: Unit tests
         run: pytest -m "not slow" -q
@@ -63,15 +63,15 @@ jobs:
         run: pip install -e ".[dev,parquet]"
 
       - name: Build the example reference set
-        run: stcnv-make-example-reference
+        run: sptrace-make-example-reference
 
       - name: Run twice at the same seed, in different interpreters
         env:
           SEED: "20260414"
         run: |
-          PYTHONHASHSEED=1 stcnv-simulate --design configs/design_example.toml \
+          PYTHONHASHSEED=1 sptrace-simulate --design configs/design_example.toml \
             --output out/a --seed "$SEED" --skip-visual --no-parquet
-          PYTHONHASHSEED=random stcnv-simulate --design configs/design_example.toml \
+          PYTHONHASHSEED=random sptrace-simulate --design configs/design_example.toml \
             --output out/b --seed "$SEED" --skip-visual --no-parquet
 
       - name: Compare every output file

@@ -1,4 +1,4 @@
-# st_cnv_simulator/cnv_logging.py
+# sptrace/cnv_logging.py
 from typing import Any, Dict, List
 import pandas as pd
 

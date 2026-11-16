@@ -35,7 +35,7 @@ EXPECTED_OUTPUTS = [
 
 def run_simulation(repo_root, out_dir, seed):
     cmd = [
-        sys.executable, "-m", "st_cnv_simulator.cli.simulate",
+        sys.executable, "-m", "sptrace.cli.simulate",
         "--design", str(repo_root / "configs" / "design_example.toml"),
         "--output", str(out_dir),
         "--seed", str(seed),
@@ -80,7 +80,7 @@ def test_all_figures_live_in_one_place(repo_root, example_reference, tmp_path):
     """Figures go to qc/ only; the old synthetic/visual/ directory is gone."""
     out = tmp_path / "figs"
     cmd = [
-        sys.executable, "-m", "st_cnv_simulator.cli.simulate",
+        sys.executable, "-m", "sptrace.cli.simulate",
         "--design", str(repo_root / "configs" / "design_example.toml"),
         "--output", str(out), "--seed", "42", "--no-parquet",
     ]
@@ -92,7 +92,7 @@ def test_all_figures_live_in_one_place(repo_root, example_reference, tmp_path):
         p.name for p in out.rglob("*.pdf")
     )
     # A single run gets the same figure set as a batch replicate, including the
-    # subclone views, which used to be produced only by stcnv-batch.
+    # subclone views, which used to be produced only by sptrace-batch.
     assert figures == [
         "celltype_proportions.png",
         "cnv_burden_spatial.png",
@@ -119,7 +119,7 @@ def test_default_run_writes_parquet(repo_root, example_reference, tmp_path):
 
     out = tmp_path / "pq"
     cmd = [
-        sys.executable, "-m", "st_cnv_simulator.cli.simulate",
+        sys.executable, "-m", "sptrace.cli.simulate",
         "--design", str(repo_root / "configs" / "design_example.toml"),
         "--output", str(out), "--seed", "42", "--skip-visual",
     ]
@@ -258,7 +258,7 @@ def test_different_seeds_produce_different_data(repo_root, example_reference, tm
 
 def test_rerun_without_overwrite_fails_cleanly(repo_root, completed_run):
     cmd = [
-        sys.executable, "-m", "st_cnv_simulator.cli.simulate",
+        sys.executable, "-m", "sptrace.cli.simulate",
         "--design", str(repo_root / "configs" / "design_example.toml"),
         "--output", str(completed_run),
         "--seed", "42", "--skip-visual", "--no-parquet",
@@ -273,7 +273,7 @@ def test_quick_purity_mode(repo_root, example_reference, tmp_path):
 
     out = tmp_path / "quick"
     cmd = [
-        sys.executable, "-m", "st_cnv_simulator.cli.simulate",
+        sys.executable, "-m", "sptrace.cli.simulate",
         "--design", str(repo_root / "configs" / "design_example.toml"),
         "--output", str(out),
         "--seed", "42", "--quick-purity-only", "--skip-visual",

@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from st_cnv_simulator import _toml as toml
-from st_cnv_simulator.cli.simulate import PATH_KEYS, load_design, resolve_paths
+from sptrace import _toml as toml
+from sptrace.cli.simulate import PATH_KEYS, load_design, resolve_paths
 
 
 def write_design(tmp_path: Path, files: dict, name="design.toml") -> Path:
@@ -95,7 +95,7 @@ def test_missing_reference_raises_with_all_offending_paths(tmp_path):
         load_design(design)
     message = str(exc.value)
     assert "refexp_file" in message
-    assert "stcnv-make-example-reference" in message
+    assert "sptrace-make-example-reference" in message
 
 
 def test_resolve_paths_tolerates_absent_optional_keys(tmp_path):

@@ -2,8 +2,8 @@
 #
 # It points at the generated example reference set, so run this first:
 #
-#   stcnv-make-example-reference
-#   stcnv-simulate --design configs/design_example.toml --output out/example
+#   sptrace-make-example-reference
+#   sptrace-simulate --design configs/design_example.toml --output out/example
 #
 # The example reference contains a SYNTHETIC expression matrix and a SYNTHETIC
 # CNV catalogue. Use it to check the pipeline runs, not to produce results.

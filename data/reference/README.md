@@ -20,7 +20,7 @@ Notes on the annotation:
   generation will fail with `cannot reindex on an axis with duplicate labels`.
 - `chr_lengths.csv` and `gene_order.csv` must use the same genome build as your CNV
   catalogue, and the same chromosome naming (`chr`-prefixed).
-- `mapped_snps.csv` was built with `stcnv-prep-snps`; regenerate it if you change the gene
+- `mapped_snps.csv` was built with `sptrace-prep-snps`; regenerate it if you change the gene
   annotation.
 
 ## Not bundled — you must supply these
@@ -64,7 +64,7 @@ allele-specific caller — ASCAT, Sequenza, FACETS, or a published pan-cancer se
 
 ### `--genetic-map` for the Numbat export
 
-`stcnv-export-numbat` annotates each SNP with its position in centimorgans. Use the map
+`sptrace-export-numbat` annotates each SNP with its position in centimorgans. Use the map
 that ships with [Eagle](https://alkesgroup.broadinstitute.org/Eagle/) v2.4.1,
 `tables/genetic_map_hg38_withX.txt.gz`. Any table with chromosome, position and cM columns
 works; column names are detected case-insensitively.
@@ -74,8 +74,8 @@ works; column names are detected case-insensitively.
 To try the pipeline without either missing input:
 
 ```bash
-stcnv-make-example-reference        # writes data/reference/example/
-stcnv-simulate --design configs/design_example.toml --output out/example
+sptrace-make-example-reference        # writes data/reference/example/
+sptrace-simulate --design configs/design_example.toml --output out/example
 ```
 
 This subsamples the real annotation above and **synthesises** the count matrix and the CNV

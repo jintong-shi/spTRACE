@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from st_cnv_simulator.cnv_utils import clean_all_df, sample_uniform_event
+from sptrace.cnv_utils import clean_all_df, sample_uniform_event
 
 
 def make_catalog():
